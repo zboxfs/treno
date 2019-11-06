@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View"/>
+        <import type="androidx.databinding.ObservableBoolean"/>
+
+        <variable name="model" type="io.zbox.treno.RepoViewModel" />
+        <variable name="handlers" type="io.zbox.treno.ExplorerFragment"/>
+        <variable name="isInSelection" type="ObservableBoolean" />
+        <variable name="showAddButtons" type="ObservableBoolean" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ExplorerFragment">
+
+        <TextView
+            android:id="@+id/frg_explorer_tv_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{model.path.toString()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/frg_explorer_rv_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#F0F4C3"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frg_explorer_tv_list" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/frg_explorer_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:onClick="@{handlers::toggleAddButtons}"
+            android:src="@drawable/ic_launcher_background"
+            android:visibility="@{isInSelection.get() ? View.GONE : View.VISIBLE, default=visible}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/frg_explorer_lay_add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="@{showAddButtons.get() ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toTopOf="@+id/frg_explorer_fab"
+            app:layout_constraintEnd_toEndOf="@+id/frg_explorer_rv_list">
+
+            <Button
+                android:id="@+id/frg_explorer_btn_add_dir"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="@{handlers::showAddDirDialog}"
+                android:text="@string/add_dir" />
+
+            <Button
+                android:id="@+id/frg_explorer_btn_add_file"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="@{handlers::startAddFileActivity}"
+                android:text="@string/add_file" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

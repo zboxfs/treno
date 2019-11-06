@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Treno</string>
+
+    <string name="title_activity_player">PlayerActivity</string>
+    <string name="add_file">Add File</string>
+    <string name="add_dir">Add Directory</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="select_all">Select All</string>
+    <string name="copy_to">Copy To</string>
+    <string name="move_to">Move To</string>
+    <string name="rename">Rename</string>
+    <string name="remove">Remove</string>
+    <string name="new_name">New Name</string>
+
+</resources>
