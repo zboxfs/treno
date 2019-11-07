@@ -18,12 +18,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="3dp"
         android:background="#B3E5FC"
         android:paddingStart="5dp"
-        android:paddingTop="5dp"
+        android:paddingTop="3dp"
         android:paddingEnd="5dp"
-        android:paddingBottom="5dp">
+        android:paddingBottom="3dp">
 
         <ImageView
             android:id="@+id/itm_dent_img_icon"
@@ -33,6 +33,7 @@
             android:layout_marginStart="5dp"
             android:contentDescription="@android:string/fingerprint_icon_content_description"
             android:tint="@color/colorAccent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@{icon}" />
@@ -42,8 +43,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="5dp"
+            android:background="#F0F4C3"
             android:gravity="center_vertical"
             android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/itm_dent_chk_select"
             app:layout_constraintStart_toEndOf="@+id/itm_dent_img_icon"
             app:layout_constraintTop_toTopOf="parent">
@@ -52,8 +55,10 @@
                 android:id="@+id/itm_dent_txt_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:background="#E1BEE7"
-                android:text="@{dent.fileName}" />
+                android:text="@{dent.fileName}"
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"

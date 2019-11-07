@@ -2,28 +2,27 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
-        <variable name="name" type="java.lang.String" />
+        <variable name="dest" type="java.lang.String" />
     </data>
 
     <LinearLayout
-        android:orientation="vertical" android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/dlg_add_txt_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/rename" />
+            android:text="Destination" />
 
         <EditText
-            android:id="@+id/dlg_rename_txt_path"
+            android:id="@+id/dlg_add_txt_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:text="@{name}"
+            android:text="@{dest}"
             android:importantForAutofill="no"
             android:inputType="textShortMessage" />
-
     </LinearLayout>
-
 </layout>

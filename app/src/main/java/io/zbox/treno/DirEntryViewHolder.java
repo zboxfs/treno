@@ -7,9 +7,6 @@ import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.ViewDataBinding;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.widget.RecyclerView;
 
 import io.zbox.zboxfs.DirEntry;

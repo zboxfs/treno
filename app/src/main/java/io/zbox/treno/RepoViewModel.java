@@ -146,13 +146,13 @@ public class RepoViewModel extends ViewModel {
         return ret;
     }
 
-    void rename(Path from, String newName) {
+    void rename(String from, String newName) {
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
-                Path path = from.clone();
+                Path path = new Path(from);
                 path.setFileName(newName);
-                repo.rename(from, path);
+                repo.rename(new Path(from), path);
 
                 readDirEntries();
             } catch (Exception err) {
@@ -161,13 +161,67 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
-    void remove(List<Path> paths) {
+    void move(List<String> fromStrs, String toStr) {
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                Path to = new Path(toStr);
+
+                for (String pathStr : fromStrs) {
+                    Path from = new Path(pathStr);
+
+                    if (repo.isFile(from) && repo.pathExists(to) && repo.isDir(to)) {
+                        Path tgt = to.join(from.fileName());
+                        repo.move(from, tgt);
+                    } else {
+                        repo.move(from, to);
+                    }
+                }
+
+                readDirEntries();
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            }
+        }).start();
+    }
+
+    void copy(List<String> fromStrs, String toStr) {
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                Path to = new Path(toStr);
+
+                for (String pathStr : fromStrs) {
+                    Path from = new Path(pathStr);
+
+                    if (repo.isFile(from)) {
+                        if (repo.pathExists(to) && repo.isDir(to)) {
+                            Path tgt = to.join(from.fileName());
+                            repo.copy(from, tgt);
+                        } else {
+                            repo.copy(from, to);
+                        }
+                    } else {
+                        repo.copyDirAll(from, to);
+                    }
+                }
+
+                if (to.parent().equals(this.path.getValue())) readDirEntries();
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            }
+        }).start();
+    }
+
+    void remove(List<String> paths) {
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
 
-                for (Path path : paths) {
+                for (String pathStr : paths) {
+                    Path path = new Path(pathStr);
                     if (repo.isFile(path)) repo.removeFile(path);
+                    if (repo.isDir(path)) repo.removeDirAll(path);
                 }
 
                 readDirEntries();

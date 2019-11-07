@@ -9,31 +9,17 @@ import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ActionMode;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.selection.ItemDetailsLookup;
-import androidx.recyclerview.selection.OnItemActivatedListener;
-import androidx.recyclerview.selection.Selection;
-import androidx.recyclerview.selection.SelectionPredicates;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -41,8 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
-import io.zbox.zboxfs.DirEntry;
-import io.zbox.zboxfs.Path;
 
 public class ExplorerFragment extends Fragment implements
         AddDirDialog.AddDirDialogListener

@@ -14,6 +14,7 @@ import androidx.appcompat.view.ActionMode;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.ItemDetailsLookup;
@@ -30,7 +31,12 @@ import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Path;
 import io.zbox.zboxfs.ZboxException;
 
-public class SelectionMode implements ActionMode.Callback, RenameDialog.RenameDialogListener {
+public class SelectionMode implements
+        ActionMode.Callback,
+        RenameDialog.RenameDialogListener,
+        MoveToDialog.MoveToDialogListener,
+        CopyToDialog.CopyToDialogListener
+{
 
     private static final String TAG = SelectionMode.class.getSimpleName();
 
@@ -152,35 +158,42 @@ public class SelectionMode implements ActionMode.Callback, RenameDialog.RenameDi
     // implement ActionMode.Callback.onActionItemClicked
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         Selection<String> selection = tracker.getSelection();
+        FragmentManager fm = ((FragmentActivity)context).getSupportFragmentManager();
 
         switch (item.getItemId()) {
             case R.id.menu_sel_select_all:
                 adapter.selectAll();
                 return true;
 
-            case R.id.menu_sel_rename:
+            case R.id.menu_sel_rename: {
                 if (selection.size() != 1) return false; // only one item can be selected
-                DialogFragment dlg = new RenameDialog(this);
-                dlg.show(((FragmentActivity)context).getSupportFragmentManager(), "rename");
+                DialogFragment dlg = new RenameDialog(selection.iterator().next(), this);
+                dlg.show(fm, "rename");
                 return true;
+            }
 
-            case R.id.menu_sel_move_to:
+            case R.id.menu_sel_move_to: {
+                if (selection.size() != 1) return false; // only one item can be selected
+                DialogFragment dlg = new MoveToDialog(selection.iterator().next(), this);
+                dlg.show(fm, "moveTo");
                 return true;
+            }
 
-            case R.id.menu_sel_copy_to:
+            case R.id.menu_sel_copy_to:{
+                DialogFragment dlg = new CopyToDialog(selection.iterator().next(), this);
+                dlg.show(fm, "copyTo");
                 return true;
+            }
 
-            case R.id.menu_sel_remove:
-                List<Path> paths = new ArrayList<>();
-                try {
-                    for (String pathStr : selection) {
-                        paths.add(new Path(pathStr));
-                        tracker.deselect(pathStr);
-                    }
-                } catch (ZboxException ignore) {}
-
+            case R.id.menu_sel_remove: {
+                List<String> paths = new ArrayList<>();
+                for (String pathStr : selection) {
+                    paths.add(pathStr);
+                }
+                tracker.clearSelection();
                 model.remove(paths);
                 return true;
+            }
 
             default:
                 return false;
@@ -197,18 +210,30 @@ public class SelectionMode implements ActionMode.Callback, RenameDialog.RenameDi
 
     // implements RenameDialog.RenameDialogListener.onRenameDialogOk
     public void onRenameDialogOk(String newName) {
+        String from = tracker.getSelection().iterator().next();
+        tracker.deselect(from);
+        model.rename(from, newName);
+    }
+
+    // implements MoveToDialog.MoveToDialogListener.onMoveToDialogOk
+    public void onMoveToDialogOk(String to) {
         Selection<String> selection = tracker.getSelection();
-
-        Log.d(TAG, newName + ", selected: "+selection.size());
-
-        String old = selection.iterator().next();
-        tracker.deselect(old);
-
-        try {
-            Path from = new Path(old);
-            model.rename(from, newName);
-        } catch (ZboxException err) {
-            Log.e(TAG, err.toString());
+        List<String> paths = new ArrayList<>();
+        for (String pathStr : selection) {
+            paths.add(pathStr);
         }
+        tracker.clearSelection();
+        model.move(paths, to);
+    }
+
+    // implements CopyToDialog.CopyToDialogListener.onCopyToDialogOk
+    public void onCopyToDialogOk(String to) {
+        Selection<String> selection = tracker.getSelection();
+        List<String> paths = new ArrayList<>();
+        for (String pathStr : selection) {
+            paths.add(pathStr);
+        }
+        tracker.clearSelection();
+        model.copy(paths, to);
     }
 }
