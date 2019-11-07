@@ -87,10 +87,10 @@ public class SelectionMode implements
 
                     // otherwise, open the file by navigating to new fragment
                     NavDirections directions;
-                    if (model.isImageFile(path)) {
+                    if (Utils.isImageFile(path)) {
                         // navigate to image viewer fragment
                         directions = ExplorerFragmentDirections.actionExplorerFragmentToViewerFragment(path);
-                    } else if (model.isVideoFile(path)) {
+                    } else if (Utils.isVideoFile(path)) {
                         // navigate to video player fragment
                         directions = ExplorerFragmentDirections.actionExplorerFragmentToPlayerFragment(path);
                     } else {

@@ -28,8 +28,7 @@ import java.io.InputStream;
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
 
-public class ExplorerFragment extends Fragment implements
-        AddDirDialog.AddDirDialogListener
+public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDialogListener
 {
 
     private static final String TAG = ExplorerFragment.class.getSimpleName();

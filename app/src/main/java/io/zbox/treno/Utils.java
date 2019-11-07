@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import io.zbox.zboxfs.DirEntry;
+import io.zbox.zboxfs.Path;
 
 class Utils {
     static String prettySize(long bytes, boolean si) {
@@ -17,6 +18,16 @@ class Utils {
     static String prettyTime(long time) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d H:mm", Locale.US);
         return sdf.format(time * 1000);
+    }
+
+    static boolean isImageFile(Path path) {
+        String ext = path.extension().toLowerCase();
+        return ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png") || ext.equals("gif");
+    }
+
+    static boolean isVideoFile(Path path) {
+        String ext = path.extension().toLowerCase();
+        return ext.equals("avi") || ext.equals("mpg") || ext.equals("mp4");
     }
 
     static int fileIcon(DirEntry dent) {
