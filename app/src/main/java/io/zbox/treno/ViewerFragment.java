@@ -1,12 +1,16 @@
 package io.zbox.treno;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -51,6 +55,7 @@ public class ViewerFragment extends Fragment implements Observer<File> {
         model = ViewModelProviders.of(getActivity()).get(RepoViewModel.class);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -58,14 +63,70 @@ public class ViewerFragment extends Fragment implements Observer<File> {
         FragmentViewerBinding binding = DataBindingUtil.inflate(inflater,
                 R.layout.fragment_viewer, container, false);
         binding.setLifecycleOwner(this);
+        binding.setHandlers(this);
         View view = binding.getRoot();
 
+        Fragment self = this;
+
+
         img = view.findViewById(R.id.frg_viewer_img);
+        img.setOnTouchListener(new ViewerSwipeTouchListener(getActivity()) {
+            void onSwipeTop() {
+               Log.d(TAG, "top");
+            }
+            void onSwipeRight() {
+                Log.d(TAG, "right");
+            }
+            void onSwipeLeft() {
+                Log.d(TAG, "left");
+                Path next = null;
+                try {
+                    next = new Path("/image2.jpg");
+                } catch (ZboxException ignore) {
+
+                }
+                model.openFile(next).observe(self, (Observer<File>)self);
+            }
+            void onSwipeBottom() {
+                Log.d(TAG, "bottom");
+            }
+        });
 
         // open file
         model.openFile(filePath).observe(this, this);
 
+        // enter full screen
+        hideSystemUI(true);
+
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        hideSystemUI(false);
+    }
+
+    private void hideSystemUI(boolean hide) {
+        View decorView = getActivity().getWindow().getDecorView();
+        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        int flag;
+
+        if (hide) {
+            flag = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    |View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    |View.SYSTEM_UI_FLAG_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    |View.SYSTEM_UI_FLAG_IMMERSIVE
+                    |View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            actionBar.hide();
+        } else {
+            flag = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            |View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            |View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            actionBar.show();
+        }
+        decorView.setSystemUiVisibility(flag);
     }
 
     /* =====================================
@@ -81,7 +142,6 @@ public class ViewerFragment extends Fragment implements Observer<File> {
             BitmapFactory.Options options = new BitmapFactory.Options();
             //options.inJustDecodeBounds = true;
             Bitmap bm = BitmapFactory.decodeStream(stream, null, options);
-
             stream.close();
 
             /*int imageHeight = options.outHeight;
@@ -93,6 +153,8 @@ public class ViewerFragment extends Fragment implements Observer<File> {
 
         } catch (IOException err) {
             Log.e(TAG, err.toString());
+        } finally {
+            file.close();
         }
     }
 }

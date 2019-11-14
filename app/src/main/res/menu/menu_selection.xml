@@ -5,6 +5,9 @@
         android:id="@+id/menu_sel_select_all"
         android:title="@string/select_all" />
     <item
+        android:id="@+id/menu_sel_open"
+        android:title="@string/open" />
+    <item
         android:id="@+id/menu_sel_rename"
         android:title="@string/rename" />
     <item

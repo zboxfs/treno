@@ -30,7 +30,6 @@ import io.zbox.treno.databinding.FragmentExplorerBinding;
 
 public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDialogListener
 {
-
     private static final String TAG = ExplorerFragment.class.getSimpleName();
 
     private static final int READ_EXTERNAL_FILE_REQUEST = 42;
@@ -93,6 +92,7 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
         model.getDirEntries().observe(this, adapter::submitList);
         model.getPath().observe(this, path -> backCallback.setEnabled(!path.isRoot()));
 
+        // initialise selection mode
         selectionMode.init(rvList);
 
         return view;

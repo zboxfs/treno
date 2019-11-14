@@ -19,10 +19,16 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
         tools:context=".ExplorerFragment">
 
         <TextView
-            android:id="@+id/frg_explorer_tv_list"
+            android:id="@+id/frg_explorer_tv_path"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="#C5CAE9"
+            android:paddingStart="5dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="3dp"
             android:text="@{model.path.toString()}"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -36,7 +42,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/frg_explorer_tv_list" />
+            app:layout_constraintTop_toBottomOf="@+id/frg_explorer_tv_path" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/frg_explorer_fab"

@@ -2,6 +2,8 @@ package io.zbox.treno;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -11,6 +13,7 @@ import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
+import androidx.core.content.FileProvider;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
@@ -24,6 +27,7 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -165,6 +169,29 @@ public class SelectionMode implements
                 adapter.selectAll();
                 return true;
 
+            case R.id.menu_sel_open: {
+                if (selection.size() != 1) return false; // only one item can be selected
+
+                java.io.File dir = new java.io.File(context.getFilesDir(), "images");
+                java.io.File file = new java.io.File(dir, "image3.jpg");
+                //Uri uri = FileProvider.getUriForFile(context, "io.zbox.treno.fileprovider", file);
+
+                Uri uri = Uri.parse("content://io.zbox.treno.provider" + selection.iterator().next());
+                //Uri uri = Uri.parse("content://io.zbox.treno.fileprovider/images/image3.jpg");
+                Log.d(TAG, uri.toString());
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "image/jpeg");
+                //intent.setDataAndType(uri, "text/plain");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                if (intent.resolveActivity(context.getPackageManager()) != null) {
+                    context.startActivity(intent);
+                    return true;
+                }
+                return false;
+            }
+
+
             case R.id.menu_sel_rename: {
                 if (selection.size() != 1) return false; // only one item can be selected
                 DialogFragment dlg = new RenameDialog(selection.iterator().next(), this);
@@ -179,7 +206,7 @@ public class SelectionMode implements
                 return true;
             }
 
-            case R.id.menu_sel_copy_to:{
+            case R.id.menu_sel_copy_to: {
                 DialogFragment dlg = new CopyToDialog(selection.iterator().next(), this);
                 dlg.show(fm, "copyTo");
                 return true;

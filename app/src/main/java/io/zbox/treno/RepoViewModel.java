@@ -2,6 +2,7 @@ package io.zbox.treno;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.Selection;
 import android.util.Log;
 
 import androidx.databinding.ObservableBoolean;
@@ -9,8 +10,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -153,6 +156,25 @@ public class RepoViewModel extends ViewModel {
         return ret;
     }
 
+    void writeToStream(String path, FileOutputStream output) {
+        Log.d(TAG, "===>writeToStream " + path );
+        try {
+            Repo repo = this.repo.getValue();
+            File file = repo.openFile(new Path(path));
+            //Thread.sleep(500);
+            byte[] buf = new byte[200000];
+            //long read = file.read(output);
+            int read = file.read(buf);
+            Log.d(TAG, "===>read " + read + " bytes");
+            output.write(buf, 0, read);
+            output.flush();
+            Log.d(TAG, "===>write " + read + " bytes to stream");
+            file.close();
+        } catch (Exception err) {
+            Log.e(TAG, err.toString());
+        }
+    }
+
     void rename(String from, String newName) {
         loading.postValue(true);
         new Thread(() -> {
@@ -261,7 +283,7 @@ public class RepoViewModel extends ViewModel {
             Path path = this.path.getValue();
             DirEntry[] dirs = repo.readDir(path);
             List<DirEntry> dents = new ArrayList<>(Arrays.asList(dirs));
-            Thread.sleep(1000);
+            Thread.sleep(500);
             this.dents.postValue(dents);
         } catch (Exception err) {
             Log.e(TAG, err.toString());
