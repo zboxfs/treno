@@ -156,6 +156,11 @@ public class RepoViewModel extends ViewModel {
         return ret;
     }
 
+    File openFile(String path) throws ZboxException {
+        Repo repo = this.repo.getValue();
+        return repo.openFile(new Path(path));
+    }
+
     void writeToStream(String path, FileOutputStream output) {
         Log.d(TAG, "===>writeToStream " + path );
         try {

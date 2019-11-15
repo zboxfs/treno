@@ -1,10 +1,14 @@
 package io.zbox.treno;
 
+import android.util.Log;
+import android.webkit.MimeTypeMap;
+
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Path;
+import io.zbox.zboxfs.ZboxException;
 
 class Utils {
     static String prettySize(long bytes, boolean si) {
@@ -44,5 +48,13 @@ class Utils {
             default:
                 return R.drawable.ic_insert_drive_file_black_24dp;
         }
+    }
+
+    static String detectMimeType(String pathStr) {
+        String ext = null;
+        try {
+            ext = new Path(pathStr).extension();
+        } catch (ZboxException ignore) {}
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
     }
 }

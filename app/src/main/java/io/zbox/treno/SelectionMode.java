@@ -172,17 +172,11 @@ public class SelectionMode implements
             case R.id.menu_sel_open: {
                 if (selection.size() != 1) return false; // only one item can be selected
 
-                java.io.File dir = new java.io.File(context.getFilesDir(), "images");
-                java.io.File file = new java.io.File(dir, "image3.jpg");
-                //Uri uri = FileProvider.getUriForFile(context, "io.zbox.treno.fileprovider", file);
-
-                Uri uri = Uri.parse("content://io.zbox.treno.provider" + selection.iterator().next());
-                //Uri uri = Uri.parse("content://io.zbox.treno.fileprovider/images/image3.jpg");
-                Log.d(TAG, uri.toString());
+                String pathStr = selection.iterator().next();
+                Uri uri = Uri.parse("content://io.zbox.treno.provider" + pathStr);
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(uri, "image/jpeg");
-                //intent.setDataAndType(uri, "text/plain");
+                intent.setDataAndType(uri, Utils.detectMimeType(pathStr));
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 if (intent.resolveActivity(context.getPackageManager()) != null) {
                     context.startActivity(intent);
