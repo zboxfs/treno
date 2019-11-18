@@ -9,7 +9,10 @@ import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.databinding.Observable;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -25,6 +28,7 @@ import android.view.ViewGroup;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Observer;
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
 
@@ -72,13 +76,15 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        ObservableBoolean isInSelection = selectionMode.getIsInSelection();
+
         // inflate view
         FragmentExplorerBinding binding = DataBindingUtil.inflate(inflater,
                 R.layout.fragment_explorer, container,false);
         binding.setLifecycleOwner(this);
         binding.setModel(model);
         binding.setHandlers(this);
-        binding.setIsInSelection(selectionMode.getIsInSelection());
+        binding.setIsInSelection(isInSelection);
         binding.setShowAddButtons(showAddButtons);
         View view = binding.getRoot();
 
@@ -94,6 +100,19 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
 
         // initialise selection mode
         selectionMode.init(rvList);
+
+        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        isInSelection.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged (Observable sender, int propertyId) {
+                Log.d(TAG, "====> onPropertyChanged " + isInSelection.get());
+                if (isInSelection.get()) {
+                    actionBar.hide();
+                } else {
+                    actionBar.show();
+                }
+            }
+        });
 
         return view;
     }

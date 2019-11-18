@@ -27,6 +27,7 @@ import io.zbox.zboxfs.File;
 import io.zbox.zboxfs.OpenOptions;
 import io.zbox.zboxfs.Path;
 import io.zbox.zboxfs.Repo;
+import io.zbox.zboxfs.RepoInfo;
 import io.zbox.zboxfs.RepoOpener;
 import io.zbox.zboxfs.ZboxException;
 
@@ -88,6 +89,11 @@ public class RepoViewModel extends ViewModel {
     void goUp() {
         Path curr = this.path.getValue();
         if (!curr.isRoot()) setPath(curr.parent());
+    }
+
+    public RepoInfo getInfo() {
+        Repo repo = this.repo.getValue();
+        return repo.info();
     }
 
     void addDir(String name) {

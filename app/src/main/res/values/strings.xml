@@ -14,5 +14,7 @@
     <string name="rename">Rename</string>
     <string name="remove">Remove</string>
     <string name="new_name">New Name</string>
+    <string name="info">Info</string>
+    <string name="close">Close</string>
 
 </resources>

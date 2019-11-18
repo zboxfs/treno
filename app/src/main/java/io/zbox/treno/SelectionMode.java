@@ -21,6 +21,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionPredicates;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -57,6 +58,47 @@ public class SelectionMode implements
         this.adapter = adapter;
     }
 
+    private class ItemActivatedListener implements OnItemActivatedListener<String> {
+        @Override
+        public boolean onItemActivated(ItemDetailsLookup.ItemDetails<String> item, MotionEvent e) {
+            String key = item.getSelectionKey();
+
+            Log.d(TAG, "==item clicked " + key);
+
+            DirEntry dent = ((DirEntryDetailsLookup.DirEntryDetails)item).getDent();
+            Path path = dent.path;
+
+            // if it is in selection mode
+            if (isInSelection.get()) {
+                if (tracker.isSelected(key)) {
+                    tracker.deselect(key);
+                } else {
+                    tracker.select(key);
+                }
+                return true;
+            }
+
+            // if it is dir entry click, enter it
+            if (dent.metadata.isDir()) {
+                model.setPath(path);
+                return true;
+            }
+
+            // otherwise, open system activity to view the file
+            String pathStr = path.toString();
+            Uri uri = Uri.parse("content://io.zbox.treno.provider" + pathStr);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, Utils.detectMimeType(pathStr));
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            if (intent.resolveActivity(context.getPackageManager()) != null) {
+                context.startActivity(intent);
+                return true;
+            }
+            return false;
+        }
+    }
+
     void init(RecyclerView rvList) {
         tracker = new SelectionTracker.Builder<>(
                 "dir-entry-selection",
@@ -66,44 +108,7 @@ public class SelectionMode implements
                 StorageStrategy.createStringStorage()
         )
                 .withSelectionPredicate(SelectionPredicates.createSelectAnything())
-                .withOnItemActivatedListener((ItemDetailsLookup.ItemDetails<String> item, MotionEvent e) -> {
-                    Log.d(TAG, "==item clicked " + item.getSelectionKey());
-
-                    String key = item.getSelectionKey();
-                    DirEntry dent = ((DirEntryDetailsLookup.DirEntryDetails)item).getDent();
-                    Path path = dent.path;
-
-                    // if it is in selection mode
-                    if (isInSelection.get()) {
-                        if (tracker.isSelected(key)) {
-                            tracker.deselect(key);
-                        } else {
-                            tracker.select(key);
-                        }
-                        return true;
-                    }
-
-                    // if clicked dir, enter it
-                    if (dent.metadata.isDir()) {
-                        model.setPath(path);
-                        return true;
-                    }
-
-                    // otherwise, open the file by navigating to new fragment
-                    NavDirections directions;
-                    if (Utils.isImageFile(path)) {
-                        // navigate to image viewer fragment
-                        directions = ExplorerFragmentDirections.actionExplorerFragmentToViewerFragment(path);
-                    } else if (Utils.isVideoFile(path)) {
-                        // navigate to video player fragment
-                        directions = ExplorerFragmentDirections.actionExplorerFragmentToPlayerFragment(path);
-                    } else {
-                        return false;
-                    }
-                    Navigation.findNavController(rvList).navigate(directions);
-
-                    return true;
-                })
+                .withOnItemActivatedListener(new ItemActivatedListener())
                 .build();
         adapter.setTracker(tracker);
 
@@ -168,23 +173,6 @@ public class SelectionMode implements
             case R.id.menu_sel_select_all:
                 adapter.selectAll();
                 return true;
-
-            case R.id.menu_sel_open: {
-                if (selection.size() != 1) return false; // only one item can be selected
-
-                String pathStr = selection.iterator().next();
-                Uri uri = Uri.parse("content://io.zbox.treno.provider" + pathStr);
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(uri, Utils.detectMimeType(pathStr));
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                if (intent.resolveActivity(context.getPackageManager()) != null) {
-                    context.startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-
 
             case R.id.menu_sel_rename: {
                 if (selection.size() != 1) return false; // only one item can be selected

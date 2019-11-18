@@ -18,28 +18,5 @@
         android:id="@+id/explorerFragment"
         android:name="io.zbox.treno.ExplorerFragment"
         android:label="fragment_explorer"
-        tools:layout="@layout/fragment_explorer" >
-        <action
-            android:id="@+id/action_explorerFragment_to_playerFragment"
-            app:destination="@id/playerFragment" />
-        <action
-            android:id="@+id/action_explorerFragment_to_viewerFragment"
-            app:destination="@id/viewerFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/playerFragment"
-        android:name="io.zbox.treno.PlayerFragment"
-        android:label="fragment_player"
-        tools:layout="@layout/fragment_player" >
-        <argument android:name="filePath"
-            app:argType="io.zbox.zboxfs.Path" />
-    </fragment>
-    <fragment
-        android:id="@+id/viewerFragment"
-        android:name="io.zbox.treno.ViewerFragment"
-        android:label="fragment_viewer"
-        tools:layout="@layout/fragment_viewer" >
-        <argument android:name="filePath"
-            app:argType="io.zbox.zboxfs.Path" />
-    </fragment>
+        tools:layout="@layout/fragment_explorer" />
 </navigation>
