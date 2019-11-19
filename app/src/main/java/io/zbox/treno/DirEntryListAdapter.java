@@ -75,9 +75,6 @@ public class DirEntryListAdapter extends ListAdapter<DirEntry, DirEntryViewHolde
     @Override
     public void onBindViewHolder(@NotNull DirEntryViewHolder holder, int position) {
         DirEntry dent = getItem(position);
-        Log.d(TAG, "==> onBindViewHolder2 " + position + ", path: " + dent.path.toString()+ ", "
-                + tracker.isSelected(dent.path.toString()) + "/" + tracker.getSelection().size());
-
         holder.bind(dent, isInActionMode, tracker.isSelected(dent.path.toString()));
     }
 

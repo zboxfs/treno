@@ -1,6 +1,7 @@
 package io.zbox.treno;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.text.Selection;
 import android.util.Log;
@@ -39,18 +40,12 @@ public class RepoViewModel extends ViewModel {
     private MutableLiveData<Path> path = new MutableLiveData<>();
     private MutableLiveData<Boolean> loading = new MutableLiveData<>();
 
+    private Resources res;
+
     public RepoViewModel() {
         Log.d(TAG, "RepoViewModel created");
 
         Env.init(Env.LOG_DEBUG);
-
-        try {
-            Repo repo = new RepoOpener().create(true).open("mem://foo", "pwd");
-            this.repo.setValue(repo);
-        } catch (ZboxException err) {
-            Log.e(TAG, err.toString());
-        }
-
         path.setValue(Path.root());
         loading.setValue(false);
     }
@@ -58,7 +53,34 @@ public class RepoViewModel extends ViewModel {
     @Override
     public void onCleared() {
         Log.d(TAG, "RepoViewModel cleared");
-        repo.getValue().close();
+        closeRepo();
+    }
+
+    void setResources(Resources res) {
+        this.res = res;
+    }
+
+    void createRepo(String uri, String pwd) {
+        loading.postValue(true);
+        new Thread(() -> {
+            try {
+                Repo repo = new RepoOpener().createNew(true).open(uri, pwd);
+                addSampleFiles(repo);
+                this.repo.postValue(repo);
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
+    }
+
+    void closeRepo() {
+        Repo repo = this.repo.getValue();
+        if (repo != null) {
+            repo.close();
+            this.repo.setValue(null);
+        }
     }
 
     LiveData<Repo> getRepo() {
@@ -300,6 +322,64 @@ public class RepoViewModel extends ViewModel {
             Log.e(TAG, err.toString());
         } finally {
             loading.postValue(false);
+        }
+    }
+
+    private void addSampleFiles(Repo repo) {
+        try {
+            // add dir
+            repo.createDirAll(new Path("/dir/sub2/sub3"));
+            repo.createDir(new Path("/dir2"));
+
+            // add text file
+            File file = new OpenOptions().create(true).write(true).open(repo, new Path("/text.txt"));
+            file.writeOnce("Hello, world!".getBytes());
+            file.close();
+
+            // add video file
+            InputStream is = res.openRawResource(R.raw.video);
+            ByteBuffer fileBytes = ByteBuffer.allocateDirect(is.available());
+            ReadableByteChannel channel = Channels.newChannel(is);
+            channel.read(fileBytes);
+            channel.close();
+            is.close();
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/video.mp4"));
+            file.writeOnce(fileBytes);
+            file.close();
+
+            // add image files
+            is = res.openRawResource(R.raw.image);
+            fileBytes = ByteBuffer.allocateDirect(is.available());
+            channel = Channels.newChannel(is);
+            channel.read(fileBytes);
+            channel.close();
+            is.close();
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image.png"));
+            file.writeOnce(fileBytes);
+            file.close();
+
+            is = res.openRawResource(R.raw.image2);
+            fileBytes = ByteBuffer.allocateDirect(is.available());
+            channel = Channels.newChannel(is);
+            channel.read(fileBytes);
+            channel.close();
+            is.close();
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image2.jpg"));
+            file.writeOnce(fileBytes);
+            file.close();
+
+            is = res.openRawResource(R.raw.image3);
+            fileBytes = ByteBuffer.allocateDirect(is.available());
+            channel = Channels.newChannel(is);
+            channel.read(fileBytes);
+            channel.close();
+            is.close();
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image3.jpg"));
+            file.writeOnce(fileBytes);
+            file.close();
+
+        } catch (Exception err) {
+            Log.e(TAG, err.toString());
         }
     }
 }

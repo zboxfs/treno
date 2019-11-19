@@ -94,18 +94,14 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
         rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         rvList.setAdapter(adapter);
 
-        // set up model observers
-        model.getDirEntries().observe(this, adapter::submitList);
-        model.getPath().observe(this, path -> backCallback.setEnabled(!path.isRoot()));
-
         // initialise selection mode
         selectionMode.init(rvList);
 
+        // set action show/hide callback
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         isInSelection.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged (Observable sender, int propertyId) {
-                Log.d(TAG, "====> onPropertyChanged " + isInSelection.get());
                 if (isInSelection.get()) {
                     actionBar.hide();
                 } else {
@@ -113,6 +109,20 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
                 }
             }
         });
+
+        // set up model observers
+        model.getDirEntries().observe(this, adapter::submitList);
+        model.getPath().observe(this, path -> {
+            // set up back button observer
+            backCallback.setEnabled(!path.isRoot());
+
+            // set up back button and title in action bar
+            actionBar.setDisplayHomeAsUpEnabled(!path.isRoot());
+            actionBar.setTitle(path.isRoot() ? "Repo" : path.fileName());
+        });
+
+        // show app bar menu
+        getActivity().invalidateOptionsMenu();
 
         return view;
     }

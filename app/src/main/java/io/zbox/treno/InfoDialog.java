@@ -30,7 +30,6 @@ public class InfoDialog extends DialogFragment {
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-
                 })
                 .create();
     }

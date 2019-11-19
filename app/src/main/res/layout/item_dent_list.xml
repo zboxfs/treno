@@ -52,7 +52,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/itm_dent_txt_name"
+                android:id="@+id/itm_repo_txt_uri"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"

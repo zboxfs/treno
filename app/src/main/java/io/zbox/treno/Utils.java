@@ -37,7 +37,7 @@ class Utils {
     }
 
     static String formatTabStr(String head, String value) {
-        int length = 40;
+        int length = 35;
         return head + String.format("%1$" + (length - head.length()) + "s", value) + "\n";
     }
 
