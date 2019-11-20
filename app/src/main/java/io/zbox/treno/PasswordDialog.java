@@ -12,16 +12,16 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class CopyToDialog extends DialogFragment {
-    public interface CopyToDialogListener {
-        void onCopyToDialogOk(String dest);
+public class PasswordDialog extends DialogFragment {
+    public interface PasswordDialogListener {
+        void onPasswordEntered(String uri, String pwd);
     }
 
-    private String src;
-    private CopyToDialog.CopyToDialogListener listener;
+    private String uri;
+    private PasswordDialogListener listener;
 
-    CopyToDialog(String src, CopyToDialog.CopyToDialogListener listener) {
-        this.src = src;
+    PasswordDialog(String uri, PasswordDialogListener listener) {
+        this.uri = uri;
         this.listener = listener;
     }
 
@@ -29,19 +29,19 @@ public class CopyToDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_copy_to, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_password, null,
                 false);
-        binding.setVariable(BR.dest, src);
+
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
                     TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
-                    String name = view.getText().toString();
-                    listener.onCopyToDialogOk(name);
+                    String pwd = view.getText().toString();
+                    listener.onPasswordEntered(uri, pwd);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = CopyToDialog.this.getDialog();
+                    Dialog dlg = PasswordDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

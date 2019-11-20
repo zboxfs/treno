@@ -85,13 +85,6 @@
                     android:text="Open Repo"
                     android:textSize="18sp" />
 
-                <Button
-                    android:id="@+id/frg_main_enter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{handlers::navToExplorer}"
-                    android:text="@string/open" />
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/frg_main_rv_repo_list"
                     android:layout_width="match_parent"

@@ -6,22 +6,19 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class CopyToDialog extends DialogFragment {
-    public interface CopyToDialogListener {
-        void onCopyToDialogOk(String dest);
+public class CloseRepoDialog extends DialogFragment {
+    public interface CloseRepoDialogListener {
+        void onRepoClosed();
     }
 
-    private String src;
-    private CopyToDialog.CopyToDialogListener listener;
+    private CloseRepoDialogListener listener;
 
-    CopyToDialog(String src, CopyToDialog.CopyToDialogListener listener) {
-        this.src = src;
+    CloseRepoDialog(CloseRepoDialogListener listener) {
         this.listener = listener;
     }
 
@@ -29,19 +26,17 @@ public class CopyToDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_copy_to, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_close, null,
                 false);
-        binding.setVariable(BR.dest, src);
+
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
-                    String name = view.getText().toString();
-                    listener.onCopyToDialogOk(name);
+                    listener.onRepoClosed();
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = CopyToDialog.this.getDialog();
+                    Dialog dlg = CloseRepoDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

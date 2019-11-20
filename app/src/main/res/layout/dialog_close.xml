@@ -10,19 +10,13 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/dlg_add_dir_txt_label"
+            android:id="@+id/dlg_close_txt_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dir name" />
+            android:layout_margin="5dp"
+            android:text="Are you sure to close this repo?"
+            android:textSize="18sp" />
 
-        <EditText
-            android:id="@+id/dlg_add_dir_txt_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Dir Name"
-            android:importantForAutofill="no"
-            android:inputType="textShortMessage" />
 
     </LinearLayout>
 

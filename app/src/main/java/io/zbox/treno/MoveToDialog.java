@@ -12,8 +12,6 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-import io.zbox.zboxfs.Path;
-
 public class MoveToDialog extends DialogFragment {
     public interface MoveToDialogListener {
         void onMoveToDialogOk(String dest);
@@ -38,7 +36,7 @@ public class MoveToDialog extends DialogFragment {
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_add_txt_path);
+                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
                     String name = view.getText().toString();
                     listener.onMoveToDialogOk(name);
                 })

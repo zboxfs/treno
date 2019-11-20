@@ -45,7 +45,6 @@ public class ZboxFileProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Log.d(TAG, "=======> ZboxFileProvider.onCreate");
         return true;
     }
 
@@ -60,13 +59,11 @@ public class ZboxFileProvider extends ContentProvider {
                         String[] selectionArgs,
                         String sortOrder)
     {
-        Log.d(TAG, "=======> ZboxFileProvider.query");
         return null;
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        Log.d(TAG, "=======> ZboxFileProvider.insert");
         return null;
     }
 
@@ -76,7 +73,6 @@ public class ZboxFileProvider extends ContentProvider {
                       String selection,
                       String[] selectionArgs)
     {
-        Log.d(TAG, "=======> ZboxFileProvider.update");
         return 0;
     }
 
@@ -85,20 +81,17 @@ public class ZboxFileProvider extends ContentProvider {
                       String selection,
                       String[] selectionArgs)
     {
-        Log.d(TAG, "=======> ZboxFileProvider.update");
         return 0;
     }
 
     @Override
     public String getType(Uri uri) {
-        Log.d(TAG, "=======> ZboxFileProvider.getType");
         String pathStr = uri.getPath();
         return Utils.detectMimeType(pathStr);
     }
 
     @Override
     public String[] getStreamTypes(Uri uri, String mimeTypeFilter) {
-        Log.d(TAG, "=======> ZboxFileProvider.getStreamTypes");
         return new String[] {getType(uri)};
     }
 
@@ -145,8 +138,6 @@ public class ZboxFileProvider extends ContentProvider {
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) {
         String path = uri.getPath();
-
-        Log.d(TAG, "=======> ZboxFileProvider.openFile: " + path);
 
         StorageManager mgr = (StorageManager)getContext().getSystemService(Context.STORAGE_SERVICE);
 

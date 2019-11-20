@@ -88,9 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.menu_main_close: {
                 model.closeRepo();
-                Navigation.findNavController(this, R.id.act_main_fragment).popBackStack();
-                // hide app bar menu
-                invalidateOptionsMenu();
                 return true;
             }
 

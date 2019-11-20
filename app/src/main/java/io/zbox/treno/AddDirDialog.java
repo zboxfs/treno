@@ -34,7 +34,7 @@ public class AddDirDialog extends DialogFragment {
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_add_txt_path);
+                    TextView view = rootView.findViewById(R.id.dlg_add_dir_txt_name);
                     String name = view.getText().toString();
                     listener.onAddDirDialogOk(name);
                 })

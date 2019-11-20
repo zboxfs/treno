@@ -16,7 +16,10 @@ import androidx.databinding.Observable;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,7 +35,9 @@ import java.util.Observer;
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
 
-public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDialogListener
+public class ExplorerFragment extends Fragment implements
+        AddDirDialog.AddDirDialogListener,
+        CloseRepoDialog.CloseRepoDialogListener
 {
     private static final String TAG = ExplorerFragment.class.getSimpleName();
 
@@ -63,41 +68,8 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
         // create selection mode
         selectionMode = new SelectionMode(this.getActivity(), model, adapter);
 
-        // create customised back navigation callback
-        backCallback = new OnBackPressedCallback(false) {
-            @Override
-            public void handleOnBackPressed() {
-                model.goUp();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, backCallback);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        ObservableBoolean isInSelection = selectionMode.getIsInSelection();
-
-        // inflate view
-        FragmentExplorerBinding binding = DataBindingUtil.inflate(inflater,
-                R.layout.fragment_explorer, container,false);
-        binding.setLifecycleOwner(this);
-        binding.setModel(model);
-        binding.setHandlers(this);
-        binding.setIsInSelection(isInSelection);
-        binding.setShowAddButtons(showAddButtons);
-        View view = binding.getRoot();
-
-        // set up recycler view
-        rvList = view.findViewById(R.id.frg_explorer_rv_list);
-        rvList.setHasFixedSize(true);
-        rvList.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvList.setAdapter(adapter);
-
-        // initialise selection mode
-        selectionMode.init(rvList);
-
         // set action show/hide callback
+        ObservableBoolean isInSelection = selectionMode.getIsInSelection();
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         isInSelection.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
@@ -110,16 +82,55 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
             }
         });
 
+        // create customised back navigation callback
+        ExplorerFragment self = this;
+        backCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (!model.goUp()) {
+                    DialogFragment dlg = new CloseRepoDialog(self);
+                    dlg.show(getActivity().getSupportFragmentManager(), "close");
+                }
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backCallback);
+
         // set up model observers
         model.getDirEntries().observe(this, adapter::submitList);
         model.getPath().observe(this, path -> {
-            // set up back button observer
-            backCallback.setEnabled(!path.isRoot());
-
             // set up back button and title in action bar
             actionBar.setDisplayHomeAsUpEnabled(!path.isRoot());
             actionBar.setTitle(path.isRoot() ? "Repo" : path.fileName());
         });
+        model.getRepo().observe(this, repo -> {
+            if (repo == null) {
+                NavHostFragment.findNavController(this).popBackStack();
+                getActivity().invalidateOptionsMenu();
+            }
+        });
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // inflate view
+        FragmentExplorerBinding binding = DataBindingUtil.inflate(inflater,
+                R.layout.fragment_explorer, container,false);
+        binding.setLifecycleOwner(this);
+        binding.setModel(model);
+        binding.setHandlers(this);
+        binding.setIsInSelection(selectionMode.getIsInSelection());
+        binding.setShowAddButtons(showAddButtons);
+        View view = binding.getRoot();
+
+        // set up recycler view
+        rvList = view.findViewById(R.id.frg_explorer_rv_list);
+        rvList.setHasFixedSize(true);
+        rvList.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvList.setAdapter(adapter);
+
+        // initialise selection mode
+        selectionMode.init(rvList);
 
         // show app bar menu
         getActivity().invalidateOptionsMenu();
@@ -184,6 +195,11 @@ public class ExplorerFragment extends Fragment implements AddDirDialog.AddDirDia
             Log.e(TAG, err.toString());
         }
 
+    }
+
+    // implements CloseRepoDialog.onRepoClosed
+    public void onRepoClosed() {
+        model.closeRepo();
     }
 
 }

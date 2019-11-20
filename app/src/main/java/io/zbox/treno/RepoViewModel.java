@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.text.Selection;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.databinding.ObservableBoolean;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -20,7 +22,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Env;
@@ -35,24 +40,27 @@ import io.zbox.zboxfs.ZboxException;
 public class RepoViewModel extends ViewModel {
     private static final String TAG = RepoViewModel.class.getSimpleName();
 
+    private MutableLiveData<List<String>> uris = new MutableLiveData<>();
+
     private MutableLiveData<Repo> repo = new MutableLiveData<>();
-    private MutableLiveData<List<DirEntry>> dents;
+    private MutableLiveData<List<DirEntry>> dents = new MutableLiveData<>();
     private MutableLiveData<Path> path = new MutableLiveData<>();
     private MutableLiveData<Boolean> loading = new MutableLiveData<>();
 
     private Resources res;
 
     public RepoViewModel() {
-        Log.d(TAG, "RepoViewModel created");
-
         Env.init(Env.LOG_DEBUG);
+
+        uris.setValue(new ArrayList<>());
+        repo.setValue(null);
+        dents.setValue(new ArrayList<>());
         path.setValue(Path.root());
         loading.setValue(false);
     }
 
     @Override
     public void onCleared() {
-        Log.d(TAG, "RepoViewModel cleared");
         closeRepo();
     }
 
@@ -60,12 +68,39 @@ public class RepoViewModel extends ViewModel {
         this.res = res;
     }
 
-    void createRepo(String uri, String pwd) {
+    void createRepo(String storage, String pwd) {
         loading.postValue(true);
         new Thread(() -> {
+            String uri = Utils.randomString(12);
+
+            if (storage.equals("mem")) {
+                uri = "mem://" + uri;
+            } else if (storage.equals("file")) {
+                uri = "file://" + uri;
+            }
+
             try {
                 Repo repo = new RepoOpener().createNew(true).open(uri, pwd);
                 addSampleFiles(repo);
+                this.repo.postValue(repo);
+
+                List<String> uris = this.uris.getValue();
+                uris.add(uri);
+                this.uris.postValue(uris);
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
+    }
+
+    void openRepo(String uri, String pwd) {
+        loading.setValue(true);
+        this.repo.setValue(null);
+        new Thread(() -> {
+            try {
+                Repo repo = new RepoOpener().open(uri, pwd);
                 this.repo.postValue(repo);
             } catch (Exception err) {
                 Log.e(TAG, err.toString());
@@ -76,22 +111,35 @@ public class RepoViewModel extends ViewModel {
     }
 
     void closeRepo() {
-        Repo repo = this.repo.getValue();
-        if (repo != null) {
-            repo.close();
-            this.repo.setValue(null);
-        }
+        loading.setValue(true);
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                if (repo != null) {
+                    List<DirEntry> dents = this.dents.getValue();
+                    dents.clear();
+                    this.dents.postValue(dents);
+
+                    repo.close();
+                    Thread.sleep(800);
+                    this.repo.postValue(null);
+                }
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
     }
+
+    LiveData<List<String>> getUris() { return uris; }
 
     LiveData<Repo> getRepo() {
         return repo;
     }
 
     LiveData<List<DirEntry>> getDirEntries() {
-        if (dents == null) {
-            this.dents = new MutableLiveData<>();
-            new Thread(this::readDirEntries).start();
-        }
+        new Thread(this::readDirEntries).start();
         return dents;
     }
 
@@ -108,9 +156,11 @@ public class RepoViewModel extends ViewModel {
         return path;
     }
 
-    void goUp() {
+    boolean goUp() {
         Path curr = this.path.getValue();
-        if (!curr.isRoot()) setPath(curr.parent());
+        if (curr.isRoot()) return false;
+        setPath(curr.parent());
+        return true;
     }
 
     public RepoInfo getInfo() {
@@ -119,7 +169,7 @@ public class RepoViewModel extends ViewModel {
     }
 
     void addDir(String name) {
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -138,7 +188,7 @@ public class RepoViewModel extends ViewModel {
     }
 
     void addFile(String name, InputStream stream) {
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -167,7 +217,7 @@ public class RepoViewModel extends ViewModel {
     LiveData<File> openFile(Path path) {
         MutableLiveData<File> ret = new MutableLiveData<>();
 
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -209,7 +259,7 @@ public class RepoViewModel extends ViewModel {
     }
 
     void rename(String from, String newName) {
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -228,7 +278,7 @@ public class RepoViewModel extends ViewModel {
     }
 
     void move(List<String> fromStrs, String toStr) {
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -256,7 +306,7 @@ public class RepoViewModel extends ViewModel {
     }
 
     void copy(List<String> fromStrs, String toStr) {
-        loading.postValue(true);
+        loading.setValue(true);
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -288,8 +338,8 @@ public class RepoViewModel extends ViewModel {
     }
 
     void remove(List<String> paths) {
+        loading.setValue(true);
         new Thread(() -> {
-            loading.postValue(true);
             try {
                 Repo repo = this.repo.getValue();
 

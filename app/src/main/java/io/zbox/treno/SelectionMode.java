@@ -144,13 +144,8 @@ public class SelectionMode implements
 
     ObservableBoolean getIsInSelection() { return isInSelection; }
 
-    boolean isInMode() {
-        return isInSelection.get();
-    }
-
     // implement ActionMode.Callback.onCreateActionMode
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        Log.d(TAG, "==onCreateActionMode");
         MenuInflater inflater = mode.getMenuInflater();
         inflater.inflate(R.menu.menu_selection, menu);
 

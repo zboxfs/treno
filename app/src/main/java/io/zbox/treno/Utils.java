@@ -3,6 +3,7 @@ package io.zbox.treno;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -63,5 +64,23 @@ class Utils {
             ext = new Path(pathStr).extension();
         } catch (ZboxException ignore) {}
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+    }
+
+    private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
+    private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
+    private static final String NUMBER = "0123456789";
+    private static final String DATA_FOR_RANDOM_STRING = CHAR_LOWER + CHAR_UPPER + NUMBER;
+    private static SecureRandom random = new SecureRandom();
+
+    static String randomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            // 0-62 (exclusive), random returns 0-61
+            int rndCharAt = random.nextInt(DATA_FOR_RANDOM_STRING.length());
+            char rndChar = DATA_FOR_RANDOM_STRING.charAt(rndCharAt);
+            sb.append(rndChar);
+        }
+
+        return sb.toString();
     }
 }
