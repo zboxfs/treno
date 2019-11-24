@@ -12,16 +12,20 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class CopyToDialog extends DialogFragment {
-    public interface CopyToDialogListener {
-        void onCopyToDialogOk(String dest);
+import io.zbox.zboxfs.Path;
+
+public class EditDialog extends DialogFragment {
+    public interface EditDialogListener {
+        void onEditDialogOk(Path path, String text);
     }
 
-    private String src;
-    private CopyToDialogListener listener;
+    private Path path;
+    private String text;
+    private EditDialogListener listener;
 
-    CopyToDialog(String src, CopyToDialogListener listener) {
-        this.src = src;
+    EditDialog(Path path, String text, EditDialogListener listener) {
+        this.path = path;
+        this.text = text;
         this.listener = listener;
     }
 
@@ -29,19 +33,20 @@ public class CopyToDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_copy_to, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_edit, null,
                 false);
-        binding.setVariable(BR.dest, src);
+        binding.setVariable(BR.text, text);
+
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
-                .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
-                    String name = view.getText().toString();
-                    listener.onCopyToDialogOk(name);
+                .setPositiveButton("Save", (DialogInterface dialog, int id) -> {
+                    TextView view = rootView.findViewById(R.id.dlg_edit_txt_text);
+                    String text = view.getText().toString();
+                    listener.onEditDialogOk(path, text);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = CopyToDialog.this.getDialog();
+                    Dialog dlg = EditDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

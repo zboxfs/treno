@@ -2,25 +2,42 @@ package io.zbox.treno;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
+import android.app.Activity;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import io.zbox.treno.databinding.ActivityMainBinding;
 import io.zbox.zboxfs.RepoInfo;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    public static final int READ_EXTERNAL_FILE_REQUEST = 42;
+    public static final int OPEN_FILE_REQUEST = 43;
 
     private RepoViewModel model;
 
@@ -28,16 +45,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        // create view model
+        model = ViewModelProviders.of(this).get(RepoViewModel.class);
+        model.setResources(getResources());
+        SharedPreferences pref = getPreferences(Context.MODE_PRIVATE);
+        List<String> uris = new ArrayList<>(pref.getAll().keySet());
+        model.setUris(uris);
+
+        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        binding.setLifecycleOwner(this);
+        binding.setLoading(model.getLoading());
 
         // use toolbar as action bar
         Toolbar toolbar = findViewById(R.id.act_main_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
-        // create view model
-        model = ViewModelProviders.of(this).get(RepoViewModel.class);
-        model.setResources(getResources());
 
         // set content provider model
         ContentProviderClient client = getContentResolver().acquireContentProviderClient("io.zbox.treno.provider");
@@ -93,6 +116,45 @@ public class MainActivity extends AppCompatActivity {
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (data == null) return;
+
+        Uri uri = data.getData();
+
+        // returned from open file activity, revoke temporary access for content provider
+        if (requestCode == OPEN_FILE_REQUEST) {
+            revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            return;
+        }
+
+        // returned from add file activity, add files to repo
+        if (requestCode == READ_EXTERNAL_FILE_REQUEST && resultCode == Activity.RESULT_OK) {
+            ContentResolver resolver = getContentResolver();
+
+            // get file name
+            String fileName;
+            try(Cursor cursor = resolver.query(uri, null, null, null,
+                    null, null))
+            {
+                if (cursor == null) return;
+
+                while (cursor.moveToNext()) {
+                    fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    try {
+                        InputStream stream = resolver.openInputStream(uri);
+                        model.addFile(fileName, stream);
+                    } catch (FileNotFoundException err) {
+                        Log.e(TAG, err.toString());
+                        break;
+                    }
+                }
+            }
         }
     }
 }

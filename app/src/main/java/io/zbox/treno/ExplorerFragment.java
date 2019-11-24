@@ -41,8 +41,6 @@ public class ExplorerFragment extends Fragment implements
 {
     private static final String TAG = ExplorerFragment.class.getSimpleName();
 
-    private static final int READ_EXTERNAL_FILE_REQUEST = 42;
-
     private RepoViewModel model;
     private RecyclerView rvList;
     private DirEntryListAdapter adapter;
@@ -59,18 +57,20 @@ public class ExplorerFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        FragmentActivity activity = getActivity();
+
         // obtain view model
-        model = new ViewModelProvider(getActivity()).get(RepoViewModel.class);
+        model = new ViewModelProvider(activity).get(RepoViewModel.class);
 
         // create list adapter
         adapter = new DirEntryListAdapter(this.getContext(), model);
 
         // create selection mode
-        selectionMode = new SelectionMode(this.getActivity(), model, adapter);
+        selectionMode = new SelectionMode(this, model, adapter);
 
         // set action show/hide callback
         ObservableBoolean isInSelection = selectionMode.getIsInSelection();
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity)activity).getSupportActionBar();
         isInSelection.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
             public void onPropertyChanged (Observable sender, int propertyId) {
@@ -89,7 +89,7 @@ public class ExplorerFragment extends Fragment implements
             public void handleOnBackPressed() {
                 if (!model.goUp()) {
                     DialogFragment dlg = new CloseRepoDialog(self);
-                    dlg.show(getActivity().getSupportFragmentManager(), "close");
+                    dlg.show(activity.getSupportFragmentManager(), "close");
                 }
             }
         };
@@ -132,7 +132,7 @@ public class ExplorerFragment extends Fragment implements
         // initialise selection mode
         selectionMode.init(rvList);
 
-        // show app bar menu
+        // refresh to show app bar menu
         getActivity().invalidateOptionsMenu();
 
         return view;
@@ -150,56 +150,20 @@ public class ExplorerFragment extends Fragment implements
 
     // implements AddDirDialog.AddDirDialogListener
     public void onAddDirDialogOk(String name) {
-        Log.d(TAG, name);
         model.addDir(name);
     }
 
     public void startAddFileActivity(View view) {
+        MainActivity activity = (MainActivity)getActivity();
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        startActivityForResult(intent, READ_EXTERNAL_FILE_REQUEST);
+        activity.startActivityForResult(intent, MainActivity.READ_EXTERNAL_FILE_REQUEST);
         showAddButtons.set(false);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode != READ_EXTERNAL_FILE_REQUEST
-                || resultCode != Activity.RESULT_OK
-                || data == null)
-        {
-            return;
-        }
-
-        Uri uri = data.getData();
-        Log.i(TAG, "Uri: " + uri.toString());
-
-        ContentResolver resolver = getActivity().getContentResolver();
-
-        // get file name
-        String fileName;
-        try(Cursor cursor = resolver.query(uri, null, null, null,
-                null, null))
-        {
-            if (cursor == null || !cursor.moveToFirst()) {
-                return;
-            }
-            fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-            Log.i(TAG, "Display Name: " + fileName);
-        }
-
-        try {
-            InputStream stream = resolver.openInputStream(uri);
-            model.addFile(fileName, stream);
-        } catch (FileNotFoundException err) {
-            Log.e(TAG, err.toString());
-        }
-
     }
 
     // implements CloseRepoDialog.onRepoClosed
     public void onRepoClosed() {
         model.closeRepo();
     }
-
 }

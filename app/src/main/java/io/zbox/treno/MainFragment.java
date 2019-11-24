@@ -39,6 +39,7 @@ import java.util.List;
 import io.zbox.treno.databinding.FragmentMainBinding;
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Metadata;
+import io.zbox.zboxfs.RepoInfo;
 
 public class MainFragment extends Fragment implements PasswordDialog.PasswordDialogListener {
 
@@ -68,6 +69,19 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
         model.getUris().observe(this, adapter::submitList);
         model.getRepo().observe(this, repo -> {
             if (repo == null) return;
+
+            // save repo uri to shared preference if it is not memory storage based
+            String uri = repo.info().uri;
+            if (!uri.startsWith("mem://")) {
+                SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
+                if (!pref.getAll().containsKey(uri)) {
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString(uri, uri);
+                    editor.apply();
+                }
+            }
+
+            // navigate to explorer fragment
             NavDirections directions = MainFragmentDirections.actionMainFragmentToExplorerFragment();
             NavHostFragment.findNavController(this).navigate(directions);
         });
@@ -76,14 +90,12 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        List<String> repoList = new ArrayList<>(pref.getAll().keySet());
-
         // Inflate the layout for this fragment
         FragmentMainBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main,
                 container,false);
         binding.setLifecycleOwner(this);
         binding.setHandlers(this);
+        binding.setUris(model.getUris());
         View view = binding.getRoot();
 
         // set app bar title
@@ -104,7 +116,6 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
     }
 
     public void onPasswordEntered(String uri, String pwd) {
-        Log.d(TAG, "====> got   " + uri + "," + pwd);
         model.openRepo(uri, pwd);
     }
 }

@@ -4,7 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+        <import type="java.util.List" />
+        <import type="android.view.View" />
+        <import type="androidx.lifecycle.LiveData" />
+
         <variable name="handlers" type="io.zbox.treno.MainFragment"/>
+        <variable name="uris" type="LiveData&lt;List&lt;String>>" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -64,19 +69,20 @@
                 android:onClick="@{handlers::createNewRepo}"
                 android:text="Create Repo" />
 
-            <View
-                android:id="@+id/divider"
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:background="?android:attr/listDivider" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
+                android:visibility="@{uris.isEmpty() ? View.GONE : View.VISIBLE, default=gone}"
                 android:orientation="vertical">
+
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:background="?android:attr/listDivider" />
 
                 <TextView
                     android:id="@+id/frg_main_txt_open"

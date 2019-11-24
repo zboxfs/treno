@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,6 +65,7 @@ public class RepoViewModel extends ViewModel {
         closeRepo();
     }
 
+    // Resource is to load sample files from raw resources
     void setResources(Resources res) {
         this.res = res;
     }
@@ -134,6 +136,10 @@ public class RepoViewModel extends ViewModel {
 
     LiveData<List<String>> getUris() { return uris; }
 
+    void setUris(List<String> uris) {
+        this.uris.setValue(uris);
+    }
+
     LiveData<Repo> getRepo() {
         return repo;
     }
@@ -147,13 +153,13 @@ public class RepoViewModel extends ViewModel {
         return loading;
     }
 
+    public LiveData<Path> getPath() {
+        return path;
+    }
+
     void setPath(Path path) {
         this.path.setValue(path);
         new Thread(this::readDirEntries).start();
-    }
-
-    public LiveData<Path> getPath() {
-        return path;
     }
 
     boolean goUp() {
@@ -240,7 +246,6 @@ public class RepoViewModel extends ViewModel {
     }
 
     void writeToStream(String path, FileOutputStream output) {
-        Log.d(TAG, "===>writeToStream " + path );
         try {
             Repo repo = this.repo.getValue();
             File file = repo.openFile(new Path(path));
@@ -256,6 +261,47 @@ public class RepoViewModel extends ViewModel {
         } catch (Exception err) {
             Log.e(TAG, err.toString());
         }
+    }
+
+    LiveData<String> readTextFile(Path path) {
+        MutableLiveData<String> ret = new MutableLiveData<>();
+
+        loading.setValue(true);
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                File file = repo.openFile(path);
+                String text = file.readAllString();
+                file.close();
+                Thread.sleep(500);
+                ret.postValue(text);
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
+
+        return ret;
+    }
+
+    void updateTextFile(Path path, String text) {
+        loading.setValue(true);
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                File file = new OpenOptions().write(true).open(repo, path);
+                file.writeOnce(text);
+                file.close();
+
+                Thread.sleep(500);
+                readDirEntries();
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
     }
 
     void rename(String from, String newName) {
@@ -382,8 +428,8 @@ public class RepoViewModel extends ViewModel {
             repo.createDir(new Path("/dir2"));
 
             // add text file
-            File file = new OpenOptions().create(true).write(true).open(repo, new Path("/text.txt"));
-            file.writeOnce("Hello, world!".getBytes());
+            File file = new OpenOptions().create(true).write(true).open(repo, new Path("/hello_world.txt"));
+            file.writeOnce("Hello, world!");
             file.close();
 
             // add video file
@@ -397,34 +443,14 @@ public class RepoViewModel extends ViewModel {
             file.writeOnce(fileBytes);
             file.close();
 
-            // add image files
+            // add image file
             is = res.openRawResource(R.raw.image);
             fileBytes = ByteBuffer.allocateDirect(is.available());
             channel = Channels.newChannel(is);
             channel.read(fileBytes);
             channel.close();
             is.close();
-            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image.png"));
-            file.writeOnce(fileBytes);
-            file.close();
-
-            is = res.openRawResource(R.raw.image2);
-            fileBytes = ByteBuffer.allocateDirect(is.available());
-            channel = Channels.newChannel(is);
-            channel.read(fileBytes);
-            channel.close();
-            is.close();
-            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image2.jpg"));
-            file.writeOnce(fileBytes);
-            file.close();
-
-            is = res.openRawResource(R.raw.image3);
-            fileBytes = ByteBuffer.allocateDirect(is.available());
-            channel = Channels.newChannel(is);
-            channel.read(fileBytes);
-            channel.close();
-            is.close();
-            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image3.jpg"));
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image.jpg"));
             file.writeOnce(fileBytes);
             file.close();
 
