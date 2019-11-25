@@ -29,9 +29,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Observer;
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
 
@@ -123,6 +120,9 @@ public class ExplorerFragment extends Fragment implements
         binding.setShowAddButtons(showAddButtons);
         View view = binding.getRoot();
 
+        // refresh to show app bar menu
+        getActivity().invalidateOptionsMenu();
+
         // set up recycler view
         rvList = view.findViewById(R.id.frg_explorer_rv_list);
         rvList.setHasFixedSize(true);
@@ -131,9 +131,6 @@ public class ExplorerFragment extends Fragment implements
 
         // initialise selection mode
         selectionMode.init(rvList);
-
-        // refresh to show app bar menu
-        getActivity().invalidateOptionsMenu();
 
         return view;
     }

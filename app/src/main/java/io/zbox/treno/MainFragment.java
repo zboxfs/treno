@@ -16,11 +16,13 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +32,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -107,6 +111,46 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
         rvList.setHasFixedSize(true);
         rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         rvList.setAdapter(adapter);
+
+        // enable swipe to delete for uri entry
+        Fragment self = this;
+        View layout = view.findViewById(R.id.frg_main_layout);
+        ItemTouchHelper.Callback swiper = new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags (RecyclerView recyclerView,
+                                         RecyclerView.ViewHolder viewHolder)
+            {
+                return makeMovementFlags(0, ItemTouchHelper.LEFT);
+            }
+
+            @Override
+            public boolean onMove (RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                   RecyclerView.ViewHolder target)
+            {
+                return false;
+            }
+
+            @Override
+            public void onSwiped (RecyclerView.ViewHolder viewHolder, int direction) {
+                final int position = viewHolder.getAdapterPosition();
+                final String uri = adapter.getCurrentList().get(position);
+
+                LiveData<Boolean> repoDeleted = model.deleteRepo(uri);
+                repoDeleted.observe(self, result -> {
+                    String msg = result ? "Repo was removed successfully." : "Failed to remove repo.";
+                    Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
+                    snackbar.show();
+                    repoDeleted.removeObservers(self);
+                });
+            }
+
+            @Override
+            public float getSwipeThreshold (RecyclerView.ViewHolder viewHolder) {
+                return 0.5f;
+            }
+        };
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swiper);
+        itemTouchhelper.attachToRecyclerView(rvList);
 
         return view;
     }

@@ -134,6 +134,26 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
+    LiveData<Boolean> deleteRepo(String uri) {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+
+        loading.setValue(true);
+        new Thread(() -> {
+            try {
+                Repo.destroy(uri);
+                Thread.sleep(800);
+                result.postValue(true);
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+                result.postValue(false);
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
+
+        return result;
+    }
+
     LiveData<List<String>> getUris() { return uris; }
 
     void setUris(List<String> uris) {
