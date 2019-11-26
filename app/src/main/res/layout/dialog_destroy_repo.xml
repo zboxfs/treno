@@ -10,19 +10,12 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/dlg_pwd_txt_label"
+            android:id="@+id/dlg_close_txt_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enter repo password" />
-
-        <EditText
-            android:id="@+id/dlg_pwd_txt_pwd"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:importantForAutofill="no"
-            android:inputType="textPassword"
-            android:text="pwd" />
+            android:layout_margin="5dp"
+            android:text="Are you sure to destroy this repo?"
+            android:textSize="18sp" />
 
     </LinearLayout>
 

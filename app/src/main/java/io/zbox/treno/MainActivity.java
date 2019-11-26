@@ -6,6 +6,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
@@ -22,6 +23,9 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -32,7 +36,7 @@ import java.util.List;
 import io.zbox.treno.databinding.ActivityMainBinding;
 import io.zbox.zboxfs.RepoInfo;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ChangePwdDialog.ChangePwdDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -40,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int OPEN_FILE_REQUEST = 43;
 
     private RepoViewModel model;
+    private View layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.setLifecycleOwner(this);
         binding.setLoading(model.getLoading());
+
+        // get root layout
+        layout = binding.getRoot().findViewById(R.id.act_main_layout);
 
         // use toolbar as action bar
         Toolbar toolbar = findViewById(R.id.act_main_toolbar);
@@ -109,6 +117,12 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
+            case R.id.menu_main_change_pwd: {
+                DialogFragment dlg = new ChangePwdDialog(this);
+                dlg.show(getSupportFragmentManager(), "changePwd");
+                return true;
+            }
+
             case R.id.menu_main_close: {
                 model.closeRepo();
                 return true;
@@ -156,5 +170,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void onPasswordChange(String oldPwd, String newPwd) {
+        LiveData<Boolean> pwdChanged = model.changePwd(oldPwd, newPwd);
+
+        pwdChanged.observe(this, result -> {
+            String msg = result ? "Password was changed successfully." : "Failed to change password.";
+            Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
+            snackbar.show();
+            pwdChanged.removeObservers(this);
+        });
     }
 }

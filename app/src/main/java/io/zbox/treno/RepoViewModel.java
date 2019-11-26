@@ -2,13 +2,8 @@ package io.zbox.treno;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.net.Uri;
-import android.text.Selection;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.databinding.ObservableBoolean;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -70,6 +65,10 @@ public class RepoViewModel extends ViewModel {
         this.res = res;
     }
 
+    LiveData<Repo> getRepo() {
+        return repo;
+    }
+
     void createRepo(String storage, String pwd) {
         loading.postValue(true);
         new Thread(() -> {
@@ -86,9 +85,8 @@ public class RepoViewModel extends ViewModel {
                 addSampleFiles(repo);
                 this.repo.postValue(repo);
 
-                List<String> uris = this.uris.getValue();
-                uris.add(uri);
-                this.uris.postValue(uris);
+                // add repo uri to uri list
+                addUri(uri);
             } catch (Exception err) {
                 Log.e(TAG, err.toString());
             } finally {
@@ -142,6 +140,38 @@ public class RepoViewModel extends ViewModel {
             try {
                 Repo.destroy(uri);
                 Thread.sleep(800);
+
+                // remove uri
+                List<String> uris = this.uris.getValue();
+                int idx = uris.indexOf(uri);
+                if (idx >= 0) {
+                    uris.remove(idx);
+                    this.uris.postValue(uris);
+                }
+
+                result.postValue(true);
+            } catch (Exception err) {
+                Log.e(TAG, err.toString());
+                result.postValue(false);
+            } finally {
+                loading.postValue(false);
+            }
+        }).start();
+
+        return result;
+    }
+
+    LiveData<Boolean> changePwd(String oldPwd, String newPwd) {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+
+        loading.setValue(true);
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+                RepoInfo info = repo.info();
+                repo.resetPassword(oldPwd, newPwd, info.opsLimit, info.memLimit);
+                Thread.sleep(800);
+
                 result.postValue(true);
             } catch (Exception err) {
                 Log.e(TAG, err.toString());
@@ -160,8 +190,10 @@ public class RepoViewModel extends ViewModel {
         this.uris.setValue(uris);
     }
 
-    LiveData<Repo> getRepo() {
-        return repo;
+    void addUri(String uri) {
+        List<String> uris = this.uris.getValue();
+        uris.add(uri);
+        this.uris.postValue(uris);
     }
 
     LiveData<List<DirEntry>> getDirEntries() {

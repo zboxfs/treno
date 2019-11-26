@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/dlg_chg_pwd_txt_old_pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enter old repo password" />
+
+        <EditText
+            android:id="@+id/dlg_chg_pwd_txt_old"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:text="pwd" />
+
+        <TextView
+            android:id="@+id/dlg_chg_pwd_txt_new_pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enter new repo password" />
+
+        <EditText
+            android:id="@+id/dlg_chg_pwd_txt_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:text="pwd" />
+
+    </LinearLayout>
+
+</layout>

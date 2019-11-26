@@ -7,9 +7,9 @@
         android:id="@+id/menu_main_info"
         android:title="@string/info" />
     <item
+        android:id="@+id/menu_main_change_pwd"
+        android:title="@string/change_pwd" />
+    <item
         android:id="@+id/menu_main_close"
         android:title="@string/close" />
-    <item
-        android:id="@+id/menu_main_delete"
-        android:title="@string/delete" />
 </menu>

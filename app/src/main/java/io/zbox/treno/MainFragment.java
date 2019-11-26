@@ -2,6 +2,9 @@ package io.zbox.treno;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +28,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,12 +49,15 @@ import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Metadata;
 import io.zbox.zboxfs.RepoInfo;
 
-public class MainFragment extends Fragment implements PasswordDialog.PasswordDialogListener {
-
+public class MainFragment extends Fragment implements
+        PasswordDialog.PasswordDialogListener,
+        DestroyRepoDialog.DestroyRepoDialogListener
+{
     private static final String TAG = MainFragment.class.getSimpleName();
 
     private RepoViewModel model;
     private UriListAdapter adapter;
+    private View layout;
 
     public MainFragment() {
         // Required empty public constructor
@@ -114,7 +121,7 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
 
         // enable swipe to delete for uri entry
         Fragment self = this;
-        View layout = view.findViewById(R.id.frg_main_layout);
+        layout = view.findViewById(R.id.frg_main_layout);
         ItemTouchHelper.Callback swiper = new ItemTouchHelper.Callback() {
             @Override
             public int getMovementFlags (RecyclerView recyclerView,
@@ -135,18 +142,14 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
                 final int position = viewHolder.getAdapterPosition();
                 final String uri = adapter.getCurrentList().get(position);
 
-                LiveData<Boolean> repoDeleted = model.deleteRepo(uri);
-                repoDeleted.observe(self, result -> {
-                    String msg = result ? "Repo was removed successfully." : "Failed to remove repo.";
-                    Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
-                    snackbar.show();
-                    repoDeleted.removeObservers(self);
-                });
+                DialogFragment dlg = new DestroyRepoDialog(uri, position,
+                        (DestroyRepoDialog.DestroyRepoDialogListener)self);
+                dlg.show((getActivity()).getSupportFragmentManager(), "destroyRepo");
             }
 
             @Override
             public float getSwipeThreshold (RecyclerView.ViewHolder viewHolder) {
-                return 0.5f;
+                return 0.7f;
             }
         };
         ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swiper);
@@ -161,5 +164,26 @@ public class MainFragment extends Fragment implements PasswordDialog.PasswordDia
 
     public void onPasswordEntered(String uri, String pwd) {
         model.openRepo(uri, pwd);
+    }
+
+    public void onRepoDestroyOk(String uri, int position) {
+        LiveData<Boolean> repoDeleted = model.deleteRepo(uri);
+
+        repoDeleted.observe(this, result -> {
+            String msg = result ? "Repo was removed successfully." : "Failed to remove repo.";
+            Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
+            snackbar.show();
+            repoDeleted.removeObservers(this);
+
+            // restore uri if deletion failed
+            if (!result) {
+                adapter.notifyItemChanged(position);
+            }
+        });
+    }
+
+    public void onRepoDestroyCancel(String uri, int position) {
+        // restore uri if destroy repo is canceled
+        adapter.notifyItemChanged(position);
     }
 }
