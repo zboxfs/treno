@@ -49,9 +49,12 @@ class Utils {
             case "avi":
             case "mpg":
             case "mp4":
+            case "mp3":
                 return R.drawable.ic_play_circle_filled_black_24dp;
             case "jpg":
             case "png":
+            case "gif":
+            case "bmp":
                 return R.drawable.ic_photo_black_24dp;
             default:
                 return R.drawable.ic_insert_drive_file_black_24dp;

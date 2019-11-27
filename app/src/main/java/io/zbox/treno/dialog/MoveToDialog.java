@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,14 +12,18 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class AddDirDialog extends DialogFragment {
-    public interface AddDirDialogListener {
-        void onAddDirDialogOk(String name);
+import io.zbox.treno.R;
+
+public class MoveToDialog extends DialogFragment {
+    public interface MoveToDialogListener {
+        void onMoveToDialogOk(String dest);
     }
 
-    private AddDirDialogListener listener;
+    private String src;
+    private MoveToDialog.MoveToDialogListener listener;
 
-    AddDirDialog(AddDirDialogListener listener) {
+    public MoveToDialog(String src, MoveToDialog.MoveToDialogListener listener) {
+        this.src = src;
         this.listener = listener;
     }
 
@@ -27,19 +31,19 @@ public class AddDirDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_add_dir, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_move_to, null,
                 false);
-
+        binding.setVariable(io.zbox.treno.BR.dest, src);
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_add_dir_txt_name);
+                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
                     String name = view.getText().toString();
-                    listener.onAddDirDialogOk(name);
+                    listener.onMoveToDialogOk(name);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = AddDirDialog.this.getDialog();
+                    Dialog dlg = MoveToDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

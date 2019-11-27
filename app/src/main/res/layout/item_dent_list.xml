@@ -19,11 +19,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
-        android:background="#B3E5FC"
         android:paddingStart="5dp"
-        android:paddingTop="3dp"
+        android:paddingTop="0dp"
         android:paddingEnd="5dp"
-        android:paddingBottom="3dp">
+        android:paddingBottom="0dp">
 
         <ImageView
             android:id="@+id/itm_dent_img_icon"
@@ -39,11 +38,11 @@
             app:srcCompat="@{icon}" />
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="5dp"
-            android:background="#F0F4C3"
             android:gravity="center_vertical"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -56,14 +55,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:background="#E1BEE7"
                 android:text="@{dent.fileName}"
                 android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FFCCBC"
                 android:orientation="horizontal"
                 android:visibility="@{dent.metadata.isDir() ? View.GONE : View.VISIBLE, default=visible}">
 
@@ -83,6 +80,15 @@
                     android:textSize="12sp" />
             </LinearLayout>
 
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="5dp"
+                android:background="?android:attr/listDivider"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
         </LinearLayout>
 
         <CheckBox
@@ -93,6 +99,7 @@
             android:visibility="@{isInSelect ? View.VISIBLE : View.GONE, default=gone}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,6 +12,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
+import io.zbox.treno.R;
+
 public class CopyToDialog extends DialogFragment {
     public interface CopyToDialogListener {
         void onCopyToDialogOk(String dest);
@@ -20,7 +22,7 @@ public class CopyToDialog extends DialogFragment {
     private String src;
     private CopyToDialogListener listener;
 
-    CopyToDialog(String src, CopyToDialogListener listener) {
+    public CopyToDialog(String src, CopyToDialogListener listener) {
         this.src = src;
         this.listener = listener;
     }
@@ -31,7 +33,7 @@ public class CopyToDialog extends DialogFragment {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_copy_to, null,
                 false);
-        binding.setVariable(BR.dest, src);
+        binding.setVariable(io.zbox.treno.BR.dest, src);
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)

@@ -1,8 +1,7 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +12,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
+import io.zbox.treno.R;
+
 public class RenameDialog extends DialogFragment {
 
     private String name;
@@ -22,7 +23,7 @@ public class RenameDialog extends DialogFragment {
         void onRenameDialogOk(String newName);
     }
 
-    RenameDialog(String name, RenameDialog.RenameDialogListener listener) {
+    public RenameDialog(String name, RenameDialog.RenameDialogListener listener) {
         this.name = name;
         this.listener = listener;
     }
@@ -33,7 +34,7 @@ public class RenameDialog extends DialogFragment {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_rename, null,
                 false);
-        binding.setVariable(BR.name, name);
+        binding.setVariable(io.zbox.treno.BR.name, name);
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)

@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,16 +12,16 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class PasswordDialog extends DialogFragment {
-    public interface PasswordDialogListener {
-        void onPasswordEntered(String uri, String pwd);
+import io.zbox.treno.R;
+
+public class AddDirDialog extends DialogFragment {
+    public interface AddDirDialogListener {
+        void onAddDirDialogOk(String name);
     }
 
-    private String uri;
-    private PasswordDialogListener listener;
+    private AddDirDialogListener listener;
 
-    PasswordDialog(String uri, PasswordDialogListener listener) {
-        this.uri = uri;
+    public AddDirDialog(AddDirDialogListener listener) {
         this.listener = listener;
     }
 
@@ -29,19 +29,19 @@ public class PasswordDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_password, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_add_dir, null,
                 false);
 
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
-                    String pwd = view.getText().toString();
-                    listener.onPasswordEntered(uri, pwd);
+                    TextView view = rootView.findViewById(R.id.dlg_add_dir_txt_name);
+                    String name = view.getText().toString();
+                    listener.onAddDirDialogOk(name);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = PasswordDialog.this.getDialog();
+                    Dialog dlg = AddDirDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

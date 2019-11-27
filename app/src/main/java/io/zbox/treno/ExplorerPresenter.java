@@ -1,9 +1,7 @@
 package io.zbox.treno;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,13 +10,10 @@ import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
-import androidx.core.content.FileProvider;
 import androidx.databinding.ObservableBoolean;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.Selection;
@@ -30,10 +25,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.zbox.treno.dialog.CopyToDialog;
+import io.zbox.treno.dialog.EditDialog;
+import io.zbox.treno.dialog.MoveToDialog;
+import io.zbox.treno.dialog.RenameDialog;
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Path;
 
-public class SelectionMode implements
+public class ExplorerPresenter implements
         ActionMode.Callback,
         OnItemActivatedListener<String>,
         RenameDialog.RenameDialogListener,
@@ -42,7 +41,7 @@ public class SelectionMode implements
         EditDialog.EditDialogListener
 {
 
-    private static final String TAG = SelectionMode.class.getSimpleName();
+    private static final String TAG = ExplorerPresenter.class.getSimpleName();
 
     private ExplorerFragment context;
     private ActionMode actionMode;
@@ -51,7 +50,7 @@ public class SelectionMode implements
     private SelectionTracker<String> tracker;
     private ObservableBoolean isInSelection = new ObservableBoolean(false);
 
-    SelectionMode(ExplorerFragment context, RepoViewModel model, DirEntryListAdapter adapter) {
+    ExplorerPresenter(ExplorerFragment context, RepoViewModel model, DirEntryListAdapter adapter) {
         this.context = context;
         this.model = model;
         this.adapter = adapter;
@@ -71,7 +70,7 @@ public class SelectionMode implements
         adapter.setTracker(tracker);
 
         // set selection change observer
-        SelectionMode self = this;
+        ExplorerPresenter self = this;
         tracker.addObserver(new SelectionTracker.SelectionObserver<String>() {
             @Override
             public void onItemStateChanged(@NonNull String key, boolean selected) {

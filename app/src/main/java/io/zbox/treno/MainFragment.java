@@ -2,52 +2,32 @@ package io.zbox.treno;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.DataBindingUtil;
-import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.zbox.treno.databinding.FragmentMainBinding;
-import io.zbox.zboxfs.DirEntry;
-import io.zbox.zboxfs.Metadata;
-import io.zbox.zboxfs.RepoInfo;
+import io.zbox.treno.dialog.DestroyRepoDialog;
+import io.zbox.treno.dialog.PasswordDialog;
 
 public class MainFragment extends Fragment implements
         PasswordDialog.PasswordDialogListener,
@@ -140,6 +120,7 @@ public class MainFragment extends Fragment implements
             @Override
             public void onSwiped (RecyclerView.ViewHolder viewHolder, int direction) {
                 final int position = viewHolder.getAdapterPosition();
+                Log.d(TAG, "====> onSwiped " + position + "," +adapter.getCurrentList().size());
                 final String uri = adapter.getCurrentList().get(position);
 
                 DialogFragment dlg = new DestroyRepoDialog(uri, position,
@@ -178,6 +159,8 @@ public class MainFragment extends Fragment implements
             // restore uri if deletion failed
             if (!result) {
                 adapter.notifyItemChanged(position);
+            } else {
+                adapter.notifyDataSetChanged();
             }
         });
     }

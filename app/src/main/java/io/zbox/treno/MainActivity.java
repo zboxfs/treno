@@ -4,11 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.navigation.Navigation;
 
 import android.app.Activity;
 import android.content.ContentProviderClient;
@@ -34,6 +31,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.zbox.treno.databinding.ActivityMainBinding;
+import io.zbox.treno.dialog.ChangePwdDialog;
+import io.zbox.treno.dialog.InfoDialog;
 import io.zbox.zboxfs.RepoInfo;
 
 public class MainActivity extends AppCompatActivity implements ChangePwdDialog.ChangePwdDialogListener {

@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
                 android:gravity="top"
                 android:orientation="vertical"
@@ -35,12 +35,26 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
-                    android:id="@+id/textView2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:text="Choose a storage type for your new repo"
+                    android:layout_marginBottom="8dp"
+                    android:autoLink="web"
+                    android:text="ZboxFS is a zero-details, privacy-focused in-app file system. Its goal is to help application store files securely, privately and reliably. Visit https://zbox.io/fs for more details."
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:autoLink="web"
+                    android:text="Treno is an demo app for ZboxFS. It shows basic usage of ZboxFS as both view model and content provider. Check out the source code at: https://github.com/zboxfs/treno"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="To get started, choose a storage type and create a demo repo"
                     android:textSize="18sp" />
 
                 <RadioGroup
@@ -72,14 +86,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="@{handlers::createNewRepo}"
-                    android:text="Create Repo" />
+                    android:text="Create A Demo Repo" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:visibility="@{uris.isEmpty() ? View.GONE : View.VISIBLE, default=gone}"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="@{uris.isEmpty() ? View.GONE : View.VISIBLE, default=gone}">
 
                     <View
                         android:id="@+id/divider"

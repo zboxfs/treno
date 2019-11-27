@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,19 +12,16 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-public class DestroyRepoDialog extends DialogFragment {
-    public interface DestroyRepoDialogListener {
-        void onRepoDestroyOk(String uri, int position);
-        void onRepoDestroyCancel(String uri, int position);
+import io.zbox.treno.R;
+
+public class ChangePwdDialog extends DialogFragment {
+    public interface ChangePwdDialogListener {
+        void onPasswordChange(String oldPwd, String newPwd);
     }
 
-    private String uri;
-    private int position;
-    private DestroyRepoDialogListener listener;
+    private ChangePwdDialogListener listener;
 
-    DestroyRepoDialog(String uri, int position, DestroyRepoDialogListener listener) {
-        this.uri = uri;
-        this.position = position;
+    public ChangePwdDialog(ChangePwdDialogListener listener) {
         this.listener = listener;
     }
 
@@ -32,19 +29,22 @@ public class DestroyRepoDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_destroy_repo,
-                null, false);
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_change_pwd, null,
+                false);
 
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
                 .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
-                    listener.onRepoDestroyOk(uri, position);
+                    TextView view = rootView.findViewById(R.id.dlg_chg_pwd_txt_old);
+                    String oldPwd = view.getText().toString();
+                    view = rootView.findViewById(R.id.dlg_chg_pwd_txt_new);
+                    String newPwd = view.getText().toString();
+                    listener.onPasswordChange(oldPwd, newPwd);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = DestroyRepoDialog.this.getDialog();
+                    Dialog dlg = ChangePwdDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
-                    listener.onRepoDestroyCancel(uri, position);
                 })
                 .create();
     }

@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -11,6 +11,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
+import io.zbox.treno.R;
+
 public class CloseRepoDialog extends DialogFragment {
     public interface CloseRepoDialogListener {
         void onRepoClosed();
@@ -18,7 +20,7 @@ public class CloseRepoDialog extends DialogFragment {
 
     private CloseRepoDialogListener listener;
 
-    CloseRepoDialog(CloseRepoDialogListener listener) {
+    public CloseRepoDialog(CloseRepoDialogListener listener) {
         this.listener = listener;
     }
 

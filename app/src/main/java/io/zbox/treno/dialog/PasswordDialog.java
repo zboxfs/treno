@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -12,20 +12,18 @@ import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.DialogFragment;
 
-import io.zbox.zboxfs.Path;
+import io.zbox.treno.R;
 
-public class EditDialog extends DialogFragment {
-    public interface EditDialogListener {
-        void onEditDialogOk(Path path, String text);
+public class PasswordDialog extends DialogFragment {
+    public interface PasswordDialogListener {
+        void onPasswordEntered(String uri, String pwd);
     }
 
-    private Path path;
-    private String text;
-    private EditDialogListener listener;
+    private String uri;
+    private PasswordDialogListener listener;
 
-    EditDialog(Path path, String text, EditDialogListener listener) {
-        this.path = path;
-        this.text = text;
+    public PasswordDialog(String uri, PasswordDialogListener listener) {
+        this.uri = uri;
         this.listener = listener;
     }
 
@@ -33,20 +31,19 @@ public class EditDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_edit, null,
+        ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.dialog_password, null,
                 false);
-        binding.setVariable(BR.text, text);
 
         View rootView = binding.getRoot();
         return builder
                 .setView(rootView)
-                .setPositiveButton("Save", (DialogInterface dialog, int id) -> {
-                    TextView view = rootView.findViewById(R.id.dlg_edit_txt_text);
-                    String text = view.getText().toString();
-                    listener.onEditDialogOk(path, text);
+                .setPositiveButton("OK", (DialogInterface dialog, int id) -> {
+                    TextView view = rootView.findViewById(R.id.dlg_pwd_txt_pwd);
+                    String pwd = view.getText().toString();
+                    listener.onPasswordEntered(uri, pwd);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
-                    Dialog dlg = EditDialog.this.getDialog();
+                    Dialog dlg = PasswordDialog.this.getDialog();
                     if (dlg != null) dlg.cancel();
                 })
                 .create();

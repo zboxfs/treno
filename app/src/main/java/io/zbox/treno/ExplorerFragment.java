@@ -1,10 +1,6 @@
 package io.zbox.treno;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -18,19 +14,18 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.OpenableColumns;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 
 import io.zbox.treno.databinding.FragmentExplorerBinding;
+import io.zbox.treno.dialog.AddDirDialog;
+import io.zbox.treno.dialog.CloseRepoDialog;
 
 public class ExplorerFragment extends Fragment implements
         AddDirDialog.AddDirDialogListener,
@@ -41,7 +36,7 @@ public class ExplorerFragment extends Fragment implements
     private RepoViewModel model;
     private RecyclerView rvList;
     private DirEntryListAdapter adapter;
-    private SelectionMode selectionMode;
+    private ExplorerPresenter presenter;
     private OnBackPressedCallback backCallback;
 
     private ObservableBoolean showAddButtons = new ObservableBoolean(false);
@@ -63,10 +58,10 @@ public class ExplorerFragment extends Fragment implements
         adapter = new DirEntryListAdapter(this.getContext(), model);
 
         // create selection mode
-        selectionMode = new SelectionMode(this, model, adapter);
+        presenter = new ExplorerPresenter(this, model, adapter);
 
         // set action show/hide callback
-        ObservableBoolean isInSelection = selectionMode.getIsInSelection();
+        ObservableBoolean isInSelection = presenter.getIsInSelection();
         ActionBar actionBar = ((AppCompatActivity)activity).getSupportActionBar();
         isInSelection.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
             @Override
@@ -116,7 +111,7 @@ public class ExplorerFragment extends Fragment implements
         binding.setLifecycleOwner(this);
         binding.setModel(model);
         binding.setHandlers(this);
-        binding.setIsInSelection(selectionMode.getIsInSelection());
+        binding.setIsInSelection(presenter.getIsInSelection());
         binding.setShowAddButtons(showAddButtons);
         View view = binding.getRoot();
 
@@ -129,8 +124,8 @@ public class ExplorerFragment extends Fragment implements
         rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         rvList.setAdapter(adapter);
 
-        // initialise selection mode
-        selectionMode.init(rvList);
+        // initialise presenter
+        presenter.init(rvList);
 
         return view;
     }
