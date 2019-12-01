@@ -14,10 +14,9 @@
     <string name="rename">Rename</string>
     <string name="remove">Remove</string>
     <string name="new_name">New Name</string>
-    <string name="info">Info</string>
-    <string name="change_pwd">Change Password
-    </string>
+    <string name="info">Repo Info</string>
+    <string name="change_pwd">Change Password</string>
     <string name="delete">Delete</string>
-    <string name="close">Close</string>
+    <string name="close">Close Repo</string>
 
 </resources>

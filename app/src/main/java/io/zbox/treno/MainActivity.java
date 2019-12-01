@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,6 +34,7 @@ import java.util.List;
 import io.zbox.treno.databinding.ActivityMainBinding;
 import io.zbox.treno.dialog.ChangePwdDialog;
 import io.zbox.treno.dialog.InfoDialog;
+import io.zbox.treno.util.Utils;
 import io.zbox.zboxfs.RepoInfo;
 
 public class MainActivity extends AppCompatActivity implements ChangePwdDialog.ChangePwdDialogListener {
@@ -53,13 +55,21 @@ public class MainActivity extends AppCompatActivity implements ChangePwdDialog.C
         // create view model
         model = ViewModelProviders.of(this).get(RepoViewModel.class);
         model.setResources(getResources());
+
+        // initialise saved uri list
         SharedPreferences pref = getPreferences(Context.MODE_PRIVATE);
         List<String> uris = new ArrayList<>(pref.getAll().keySet());
         model.setUris(uris);
 
+        // set up model binding for loading indicator
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.setLifecycleOwner(this);
         binding.setLoading(model.getLoading());
+
+        // set up model observer for error message toast
+        model.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        });
 
         // get root layout
         layout = binding.getRoot().findViewById(R.id.act_main_layout);
@@ -175,9 +185,11 @@ public class MainActivity extends AppCompatActivity implements ChangePwdDialog.C
         LiveData<Boolean> pwdChanged = model.changePwd(oldPwd, newPwd);
 
         pwdChanged.observe(this, result -> {
-            String msg = result ? "Password was changed successfully." : "Failed to change password.";
-            Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
-            snackbar.show();
+            if (result) {
+                String msg = "Password was changed successfully.";
+                Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
             pwdChanged.removeObservers(this);
         });
     }

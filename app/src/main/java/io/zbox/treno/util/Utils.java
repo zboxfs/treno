@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.util;
 
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -7,12 +7,13 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import io.zbox.treno.R;
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Path;
 import io.zbox.zboxfs.ZboxException;
 
-class Utils {
-    static String prettySize(long bytes, boolean si) {
+public class Utils {
+    public static String prettySize(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
@@ -20,14 +21,14 @@ class Utils {
         return String.format(Locale.US, "%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    static String prettyTime(long time) {
+    public static String prettyTime(long time) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d H:mm", Locale.US);
         return sdf.format(time * 1000);
     }
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
-    static String bytesToHex(byte[] bytes) {
+    public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
@@ -37,12 +38,12 @@ class Utils {
         return new String(hexChars);
     }
 
-    static String formatTabStr(String head, String value) {
+    public static String formatTabStr(String head, String value) {
         int length = 35;
         return head + String.format("%1$" + (length - head.length()) + "s", value) + "\n";
     }
 
-    static int fileIcon(DirEntry dent) {
+    public static int fileIcon(DirEntry dent) {
         if (dent.metadata.isDir()) return R.drawable.ic_folder_black_24dp;
 
         switch (dent.path.extension().toLowerCase()) {
@@ -61,7 +62,7 @@ class Utils {
         }
     }
 
-    static String detectMimeType(String pathStr) {
+    public static String detectMimeType(String pathStr) {
         String ext = null;
         try {
             ext = new Path(pathStr).extension();
@@ -75,7 +76,7 @@ class Utils {
     private static final String DATA_FOR_RANDOM_STRING = CHAR_LOWER + CHAR_UPPER + NUMBER;
     private static SecureRandom random = new SecureRandom();
 
-    static String randomString(int length) {
+    public static String randomString(int length) {
         StringBuilder sb = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             // 0-62 (exclusive), random returns 0-61

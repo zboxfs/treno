@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.main;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -22,16 +22,26 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import io.zbox.treno.databinding.DialogZboxStorageBinding;
+import io.zbox.treno.dialog.ZboxStorageDialog;
+import io.zbox.treno.main.MainFragmentDirections;
+import io.zbox.treno.R;
+import io.zbox.treno.RepoViewModel;
 import io.zbox.treno.databinding.FragmentMainBinding;
 import io.zbox.treno.dialog.DestroyRepoDialog;
 import io.zbox.treno.dialog.PasswordDialog;
+import io.zbox.treno.util.Utils;
 
 public class MainFragment extends Fragment implements
         PasswordDialog.PasswordDialogListener,
-        DestroyRepoDialog.DestroyRepoDialogListener
+        DestroyRepoDialog.DestroyRepoDialogListener,
+        ZboxStorageDialog.ZboxStorageDialogListener
 {
     private static final String TAG = MainFragment.class.getSimpleName();
 
@@ -139,8 +149,28 @@ public class MainFragment extends Fragment implements
         return view;
     }
 
+    public void onZboxStorageDialogOk(String loc) {
+
+    }
+
     public void createNewRepo(View view) {
-        model.createRepo("mem", "pwd");
+        RadioGroup rg = layout.findViewById(R.id.frg_main_rgp_storage);
+        String uri = Utils.randomString(8);
+
+        switch (rg.getCheckedRadioButtonId()) {
+            case R.id.frg_main_rbn_mem:
+                uri = "mem://" + uri;
+                break;
+            case R.id.frg_main_rbn_file:
+                uri = "file://" + getContext().getFilesDir() + "/" + uri;
+                break;
+            case R.id.frg_main_rbn_zbox:
+                uri = "zbox://";
+                break;
+            default:
+                return;
+        }
+        model.createRepo(uri, "pwd");
     }
 
     public void onPasswordEntered(String uri, String pwd) {
@@ -151,10 +181,20 @@ public class MainFragment extends Fragment implements
         LiveData<Boolean> repoDeleted = model.deleteRepo(uri);
 
         repoDeleted.observe(this, result -> {
-            String msg = result ? "Repo was removed successfully." : "Failed to remove repo.";
-            Snackbar snackbar = Snackbar.make(layout, msg, Snackbar.LENGTH_LONG);
-            snackbar.show();
+            SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            if (pref.getAll().containsKey(uri)) {
+                SharedPreferences.Editor editor = pref.edit();
+                editor.remove(uri);
+                editor.apply();
+            }
+
             repoDeleted.removeObservers(this);
+
+            if (result) {
+                Snackbar snackbar = Snackbar.make(layout, "Repo was removed successfully.",
+                        Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
 
             // restore uri if deletion failed
             if (!result) {

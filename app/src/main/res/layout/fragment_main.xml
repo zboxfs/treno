@@ -8,7 +8,7 @@
         <import type="android.view.View" />
         <import type="androidx.lifecycle.LiveData" />
 
-        <variable name="handlers" type="io.zbox.treno.MainFragment"/>
+        <variable name="handlers" type="io.zbox.treno.main.MainFragment"/>
         <variable name="uris" type="LiveData&lt;List&lt;String>>" />
     </data>
 
@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/frg_main_layout"
-        tools:context=".MainFragment">
+        tools:context=".main.MainFragment">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -47,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:autoLink="web"
-                    android:text="Treno is an demo app for ZboxFS. It shows basic usage of ZboxFS as both view model and content provider. Check out the source code at: https://github.com/zboxfs/treno"
+                    android:text="Treno is an demo app for basic usage of ZboxFS. It shows how to implement a view model and content provider using ZboxFS. Check out the source code at: https://github.com/zboxfs/treno"
                     android:textSize="18sp" />
 
                 <TextView
@@ -58,24 +58,25 @@
                     android:textSize="18sp" />
 
                 <RadioGroup
+                    android:id="@+id/frg_main_rgp_storage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
                     <RadioButton
-                        android:id="@+id/radioButton"
+                        android:id="@+id/frg_main_rbn_mem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:checked="true"
                         android:text="Memory Storage" />
 
                     <RadioButton
-                        android:id="@+id/radioButton2"
+                        android:id="@+id/frg_main_rbn_file"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="File Storage" />
 
                     <RadioButton
-                        android:id="@+id/radioButton3"
+                        android:id="@+id/frg_main_rbn_zbox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Zbox Cloud Storage" />

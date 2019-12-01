@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.explorer;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.ItemKeyProvider;

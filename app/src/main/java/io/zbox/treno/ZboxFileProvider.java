@@ -1,15 +1,10 @@
 package io.zbox.treno;
 
-import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
@@ -18,22 +13,10 @@ import android.os.storage.StorageManager;
 import android.system.ErrnoException;
 import android.system.OsConstants;
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOError;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-
+import io.zbox.treno.util.Utils;
 import io.zbox.zboxfs.File;
 import io.zbox.zboxfs.Metadata;
-import io.zbox.zboxfs.Path;
 import io.zbox.zboxfs.SeekFrom;
 import io.zbox.zboxfs.ZboxException;
 

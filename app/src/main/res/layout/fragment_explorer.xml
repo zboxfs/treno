@@ -8,7 +8,7 @@
         <import type="androidx.databinding.ObservableBoolean"/>
 
         <variable name="model" type="io.zbox.treno.RepoViewModel" />
-        <variable name="handlers" type="io.zbox.treno.ExplorerFragment"/>
+        <variable name="handlers" type="io.zbox.treno.explorer.ExplorerFragment"/>
         <variable name="isInSelection" type="ObservableBoolean" />
         <variable name="showAddButtons" type="ObservableBoolean" />
     </data>
@@ -16,7 +16,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ExplorerFragment">
+        tools:context=".explorer.ExplorerFragment">
 
         <TextView
             android:id="@+id/frg_explorer_tv_path"

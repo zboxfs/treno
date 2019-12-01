@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.explorer;
 
 import android.view.MotionEvent;
 import android.view.View;

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="io.zbox.treno.MainFragment"
+        android:name="io.zbox.treno.main.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/explorerFragment"
-        android:name="io.zbox.treno.ExplorerFragment"
+        android:name="io.zbox.treno.explorer.ExplorerFragment"
         android:label="fragment_explorer"
         tools:layout="@layout/fragment_explorer" />
 </navigation>

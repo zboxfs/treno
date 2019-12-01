@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.explorer;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -25,6 +25,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.zbox.treno.MainActivity;
+import io.zbox.treno.R;
+import io.zbox.treno.RepoViewModel;
+import io.zbox.treno.util.Utils;
 import io.zbox.treno.dialog.CopyToDialog;
 import io.zbox.treno.dialog.EditDialog;
 import io.zbox.treno.dialog.MoveToDialog;

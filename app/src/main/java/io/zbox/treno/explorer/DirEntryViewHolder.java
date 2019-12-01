@@ -1,17 +1,16 @@
-package io.zbox.treno;
+package io.zbox.treno.explorer;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
-import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.ViewDataBinding;
 import androidx.recyclerview.widget.RecyclerView;
 
+import io.zbox.treno.RepoViewModel;
+import io.zbox.treno.util.Utils;
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Metadata;
-import io.zbox.zboxfs.Path;
 
 public class DirEntryViewHolder extends RecyclerView.ViewHolder {
 
@@ -51,14 +50,14 @@ public class DirEntryViewHolder extends RecyclerView.ViewHolder {
         String size = metadata.isDir() ? "" : Utils.prettySize(metadata.contentLen, true) + ",";
         String mtime = metadata.isDir() ? "" : Utils.prettyTime(metadata.modifiedAt);
 
-        binding.setVariable(BR.dent, dent);
-        binding.setVariable(BR.icon, icon);
-        binding.setVariable(BR.size, size);
-        binding.setVariable(BR.mtime, mtime);
-        binding.setVariable(BR.handlers, this);
+        binding.setVariable(io.zbox.treno.BR.dent, dent);
+        binding.setVariable(io.zbox.treno.BR.icon, icon);
+        binding.setVariable(io.zbox.treno.BR.size, size);
+        binding.setVariable(io.zbox.treno.BR.mtime, mtime);
+        binding.setVariable(io.zbox.treno.BR.handlers, this);
 
-        binding.setVariable(BR.isInSelect, isInSelect);
-        binding.setVariable(BR.isSelected, isSelected);
+        binding.setVariable(io.zbox.treno.BR.isInSelect, isInSelect);
+        binding.setVariable(io.zbox.treno.BR.isSelected, isSelected);
 
         binding.executePendingBindings();
     }

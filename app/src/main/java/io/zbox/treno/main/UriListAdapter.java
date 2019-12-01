@@ -1,4 +1,4 @@
-package io.zbox.treno;
+package io.zbox.treno.main;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.jetbrains.annotations.NotNull;
+
+import io.zbox.treno.R;
 
 public class UriListAdapter extends ListAdapter<String, UriListAdapter.UriListViewHolder> {
 
@@ -30,7 +32,7 @@ public class UriListAdapter extends ListAdapter<String, UriListAdapter.UriListVi
         }
 
         void bind(String uri, OnItemClickListener listener) {
-            binding.setVariable(BR.uri, uri);
+            binding.setVariable(io.zbox.treno.BR.uri, uri);
             binding.executePendingBindings();
             binding.getRoot().setOnClickListener(view -> listener.onUriItemClicked(uri));
         }
