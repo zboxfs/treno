@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements ChangePwdDialog.C
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.setLifecycleOwner(this);
         binding.setLoading(model.getLoading());
+        binding.setLoadingText(model.getLoadingText());
 
         // set up model observer for error message toast
         model.getError().observe(this, msg -> {

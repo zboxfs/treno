@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.ProxyFileDescriptorCallback;
@@ -13,6 +14,8 @@ import android.os.storage.StorageManager;
 import android.system.ErrnoException;
 import android.system.OsConstants;
 import android.util.Log;
+
+import java.io.IOException;
 
 import io.zbox.treno.util.Utils;
 import io.zbox.zboxfs.File;
@@ -78,18 +81,43 @@ public class ZboxFileProvider extends ContentProvider {
         return new String[] {getType(uri)};
     }
 
-    private static class FileReadCallback extends ProxyFileDescriptorCallback {
+    private class FileReadWorker extends HandlerThread {
+        private Handler handler;
 
-        private File file;
+        FileReadWorker(String name) {
+            super(name);
+        }
 
-        FileReadCallback(File file) {
-            this.file = file;
+        synchronized void waitUntilReady() {
+            handler = new Handler(getLooper());
+        }
+
+        Handler getHandler() {
+            return handler;
+        }
+    }
+
+    private class FileReadCallback extends ProxyFileDescriptorCallback {
+
+        private FileReadWorker worker;
+        private String path;
+        private File file = null;
+
+        FileReadCallback(String path, FileReadWorker worker) {
+            this.path = path;
+            this.worker = worker;
+        }
+
+        // open file if it is not opened yet
+        private void ensureFileOpened() throws ZboxException {
+            if (file == null) file = model.openFile(path);
         }
 
         @Override
         public long onGetSize () throws ErrnoException {
             long size = 0;
             try {
+                ensureFileOpened();
                 Metadata md = file.metadata();
                 size = md.contentLen;
             } catch (ZboxException err) {
@@ -103,6 +131,7 @@ public class ZboxFileProvider extends ContentProvider {
         public int onRead(long offset, int size, byte[] data) throws ErrnoException {
             int read = 0;
             try {
+                ensureFileOpened();
                 file.seek(offset, SeekFrom.START);
                 read = file.read(data, 0, size);
             } catch (ZboxException err) {
@@ -114,7 +143,9 @@ public class ZboxFileProvider extends ContentProvider {
 
         @Override
         public void onRelease () {
-            file.close();
+            if (file != null) file.close();
+            file = null;
+            worker.quitSafely();
         }
     }
 
@@ -124,11 +155,15 @@ public class ZboxFileProvider extends ContentProvider {
 
         StorageManager mgr = (StorageManager)getContext().getSystemService(Context.STORAGE_SERVICE);
 
+        FileReadWorker worker = new FileReadWorker("zbox-file-reader");
+        worker.start();
+        worker.waitUntilReady();
+
+        FileReadCallback callback = new FileReadCallback(path, worker);
+
         try {
-            FileReadCallback callback = new FileReadCallback(model.openFile(path));
-            Handler handler = new Handler(Looper.getMainLooper());
-            return mgr.openProxyFileDescriptor(ParcelFileDescriptor.MODE_READ_ONLY, callback, handler);
-        } catch (Exception err) {
+            return mgr.openProxyFileDescriptor(ParcelFileDescriptor.MODE_READ_ONLY, callback, worker.getHandler());
+        } catch (IOException err) {
             Log.e(TAG, err.toString());
         }
 

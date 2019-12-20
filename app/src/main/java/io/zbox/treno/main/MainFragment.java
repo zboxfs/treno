@@ -22,15 +22,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import io.zbox.treno.databinding.DialogZboxStorageBinding;
+import io.zbox.treno.dialog.ForceOpenDialog;
 import io.zbox.treno.dialog.ZboxStorageDialog;
-import io.zbox.treno.main.MainFragmentDirections;
 import io.zbox.treno.R;
 import io.zbox.treno.RepoViewModel;
 import io.zbox.treno.databinding.FragmentMainBinding;
@@ -41,13 +38,16 @@ import io.zbox.treno.util.Utils;
 public class MainFragment extends Fragment implements
         PasswordDialog.PasswordDialogListener,
         DestroyRepoDialog.DestroyRepoDialogListener,
-        ZboxStorageDialog.ZboxStorageDialogListener
+        ZboxStorageDialog.RegionDialogListener,
+        ForceOpenDialog.ForceOpenDialogListener
 {
     private static final String TAG = MainFragment.class.getSimpleName();
 
     private RepoViewModel model;
     private UriListAdapter adapter;
     private View layout;
+
+    private String uri, pwd;
 
     public MainFragment() {
         // Required empty public constructor
@@ -82,9 +82,18 @@ public class MainFragment extends Fragment implements
                 }
             }
 
+            this.uri = "";
+            this.pwd = "";
+
             // navigate to explorer fragment
             NavDirections directions = MainFragmentDirections.actionMainFragmentToExplorerFragment();
             NavHostFragment.findNavController(this).navigate(directions);
+        });
+        model.getRepoIsLocked().observe(this, repoIsLocked -> {
+            if (!repoIsLocked) return;
+
+            DialogFragment dlg = new ForceOpenDialog(this);
+            dlg.show((getActivity()).getSupportFragmentManager(), "forceOpenRepo");
         });
     }
 
@@ -130,7 +139,6 @@ public class MainFragment extends Fragment implements
             @Override
             public void onSwiped (RecyclerView.ViewHolder viewHolder, int direction) {
                 final int position = viewHolder.getAdapterPosition();
-                Log.d(TAG, "====> onSwiped " + position + "," +adapter.getCurrentList().size());
                 final String uri = adapter.getCurrentList().get(position);
 
                 DialogFragment dlg = new DestroyRepoDialog(uri, position,
@@ -149,32 +157,49 @@ public class MainFragment extends Fragment implements
         return view;
     }
 
-    public void onZboxStorageDialogOk(String loc) {
-
-    }
-
     public void createNewRepo(View view) {
         RadioGroup rg = layout.findViewById(R.id.frg_main_rgp_storage);
         String uri = Utils.randomString(8);
+        final String pwd = "pwd";
 
         switch (rg.getCheckedRadioButtonId()) {
             case R.id.frg_main_rbn_mem:
                 uri = "mem://" + uri;
+                model.createRepo(uri, pwd);
                 break;
             case R.id.frg_main_rbn_file:
                 uri = "file://" + getContext().getFilesDir() + "/" + uri;
+                model.createRepo(uri, pwd);
                 break;
             case R.id.frg_main_rbn_zbox:
-                uri = "zbox://";
+                DialogFragment dlg = new ZboxStorageDialog(this);
+                dlg.show((getActivity()).getSupportFragmentManager(), "selectRegion");
+
                 break;
-            default:
-                return;
         }
-        model.createRepo(uri, "pwd");
     }
 
     public void onPasswordEntered(String uri, String pwd) {
-        model.openRepo(uri, pwd);
+        this.uri = uri;
+        this.pwd = pwd;
+        model.openRepo(uri, pwd, false);
+    }
+
+    public void onRegionDialogOk(String region, String cacheType, String cacheSize) {
+        model.createZboxRepo(region).observe(this, repoUri -> {
+            String uri = repoUri + "?cache_type=" + cacheType + "&cache_size=" + cacheSize;
+            if (cacheType.equals("file")) {
+                String repoId = repoUri.split("@")[1];
+                uri += "&base=" + getContext().getFilesDir() + "/" + repoId;
+            }
+
+            Log.d(TAG, "===>" + uri);
+            model.createRepo(uri, "pwd");
+        });
+    }
+
+    public void onForceOpenDialogOk() {
+        model.openRepo(this.uri, this.pwd, true);
     }
 
     public void onRepoDestroyOk(String uri, int position) {

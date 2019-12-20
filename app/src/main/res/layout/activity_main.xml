@@ -9,6 +9,7 @@
         <import type="androidx.lifecycle.LiveData" />
 
         <variable name="loading" type="LiveData&lt;Boolean>" />
+        <variable name="loadingText" type="LiveData&lt;String>" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -46,7 +47,7 @@
                 android:id="@+id/act_main_vw_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#80000000"
+                android:background="#B3000000"
                 android:visibility="@{loading.getValue() ? View.VISIBLE : View.GONE, default=gone}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -65,6 +66,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/act_main_txt_loading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@{loadingText}"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:visibility="@{loading.getValue() ? View.VISIBLE : View.GONE, default=gone}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/act_main_prg_loading" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

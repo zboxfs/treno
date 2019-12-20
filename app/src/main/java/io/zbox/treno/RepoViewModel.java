@@ -3,21 +3,30 @@ package io.zbox.treno;
 import android.content.res.Resources;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import org.json.JSONObject;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import io.zbox.treno.util.Utils;
+import javax.net.ssl.HttpsURLConnection;
+
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Env;
 import io.zbox.zboxfs.File;
@@ -34,9 +43,11 @@ public class RepoViewModel extends ViewModel {
     private MutableLiveData<List<String>> uris = new MutableLiveData<>();
 
     private MutableLiveData<Repo> repo = new MutableLiveData<>();
+    private MutableLiveData<Boolean> repoIsLocked = new MutableLiveData<>();
     private MutableLiveData<List<DirEntry>> dents = new MutableLiveData<>();
     private MutableLiveData<Path> path = new MutableLiveData<>();
     private MutableLiveData<Boolean> loading = new MutableLiveData<>();
+    private MutableLiveData<String> loadingText = new MutableLiveData<>();
     private MutableLiveData<String> error = new MutableLiveData<>();
 
     private Resources res;
@@ -61,15 +72,18 @@ public class RepoViewModel extends ViewModel {
         this.res = res;
     }
 
-    public LiveData<Repo> getRepo() {
-        return repo;
-    }
+    public LiveData<Repo> getRepo() { return repo; }
+
+    public LiveData<Boolean> getRepoIsLocked() { return repoIsLocked; }
 
     public void createRepo(String uri, String pwd) {
         loading.postValue(true);
+        loadingText.postValue("Creating repo...");
         new Thread(() -> {
             try {
                 Repo repo = new RepoOpener().createNew(true).open(uri, pwd);
+
+                loadingText.postValue("Adding sample files...");
                 addSampleFiles(repo);
                 this.repo.postValue(repo);
 
@@ -83,15 +97,23 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
-    public void openRepo(String uri, String pwd) {
+    public void openRepo(String uri, String pwd, boolean force) {
         loading.setValue(true);
+        loadingText.postValue("Opening repo...");
         this.repo.setValue(null);
         new Thread(() -> {
             try {
-                Repo repo = new RepoOpener().open(uri, pwd);
+                RepoOpener opener = new RepoOpener();
+                if (force) opener.force(true);
+                Repo repo = opener.open(uri, pwd);
+                this.repoIsLocked.postValue(false);
                 this.repo.postValue(repo);
-            } catch (Exception err) {
-                OutputErrorMsg(err);
+            } catch (ZboxException err) {
+                if (err.getErrorCode() == ZboxException.ERR_REPO_OPENED) {
+                    this.repoIsLocked.postValue(true);
+                } else {
+                    OutputErrorMsg(err);
+                }
             } finally {
                 loading.postValue(false);
             }
@@ -100,6 +122,7 @@ public class RepoViewModel extends ViewModel {
 
     public void closeRepo() {
         loading.setValue(true);
+        loadingText.setValue("Closing repo...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -123,6 +146,7 @@ public class RepoViewModel extends ViewModel {
         MutableLiveData<Boolean> result = new MutableLiveData<>();
 
         loading.setValue(true);
+        loadingText.setValue("Deleting repo...");
         new Thread(() -> {
             try {
                 Repo.destroy(uri);
@@ -151,6 +175,7 @@ public class RepoViewModel extends ViewModel {
         MutableLiveData<Boolean> result = new MutableLiveData<>();
 
         loading.setValue(true);
+        loadingText.setValue("Changing password...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -190,6 +215,10 @@ public class RepoViewModel extends ViewModel {
         return loading;
     }
 
+    LiveData<String> getLoadingText() {
+        return loadingText;
+    }
+
     LiveData<String> getError() {
         return error;
     }
@@ -217,6 +246,7 @@ public class RepoViewModel extends ViewModel {
 
     public void addDir(String name) {
         loading.setValue(true);
+        loadingText.setValue("Adding dir...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -235,6 +265,7 @@ public class RepoViewModel extends ViewModel {
 
     void addFile(String name, InputStream stream) {
         loading.setValue(true);
+        loadingText.setValue("Adding file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -263,6 +294,7 @@ public class RepoViewModel extends ViewModel {
         MutableLiveData<File> ret = new MutableLiveData<>();
 
         loading.setValue(true);
+        loadingText.setValue("Opening file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -287,6 +319,7 @@ public class RepoViewModel extends ViewModel {
         MutableLiveData<String> ret = new MutableLiveData<>();
 
         loading.setValue(true);
+        loadingText.setValue("Reading file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -306,6 +339,7 @@ public class RepoViewModel extends ViewModel {
 
     public void updateTextFile(Path path, String text) {
         loading.setValue(true);
+        loadingText.setValue("Updating file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -324,6 +358,7 @@ public class RepoViewModel extends ViewModel {
 
     public void rename(String from, String newName) {
         loading.setValue(true);
+        loadingText.setValue("Renaming file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -342,6 +377,7 @@ public class RepoViewModel extends ViewModel {
 
     public void move(List<String> fromStrs, String toStr) {
         loading.setValue(true);
+        loadingText.setValue("Moving file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -369,6 +405,7 @@ public class RepoViewModel extends ViewModel {
 
     public void copy(List<String> fromStrs, String toStr) {
         loading.setValue(true);
+        loadingText.setValue("Copying file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -400,6 +437,7 @@ public class RepoViewModel extends ViewModel {
 
     public void remove(List<String> paths) {
         loading.setValue(true);
+        loadingText.setValue("Removing file...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -417,6 +455,85 @@ public class RepoViewModel extends ViewModel {
                 loading.postValue(false);
             }
         }).start();
+    }
+
+    public LiveData<String> createZboxRepo(String region) {
+        MutableLiveData<String> ret = new MutableLiveData<>();
+
+        loading.setValue(true);
+        loadingText.setValue("Creating ZboxCloud storage...");
+        new Thread(() -> {
+            HttpsURLConnection conn = null;
+
+            try {
+                URL url = new URL("https://api.zbox.io/v1/repos");
+
+                // create connection
+                conn = (HttpsURLConnection) url.openConnection();
+
+                // set connection properties
+                conn.setRequestMethod("POST");
+                conn.setConnectTimeout(5000);
+                conn.setUseCaches(false);
+                conn.setDoOutput(true);
+                conn.setDoInput(true);
+
+                // set HTTP headers
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer r9xdz2sUsmLy3RG7V29GUpkQ");
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("Cache-Control", "no-cache");
+                headers.put("Host", "api.zbox.io");
+                headers.put("Origin", "https://zbox.io");
+                for (Map.Entry<String, String> ent : headers.entrySet()) {
+                    String key = ent.getKey();
+                    String value = ent.getValue();
+                    conn.setRequestProperty(key, value);
+                }
+
+                // write body
+                String body = "{\"name\":\"try zbox android\",\"region\":\"" + region + "\",\"tags\":[\"all\"]}";
+                OutputStream out = conn.getOutputStream();
+                out.write(body.getBytes());
+
+                // only process body when request succeed
+                int statusCode = conn.getResponseCode();
+                if (statusCode == HttpURLConnection.HTTP_OK) {
+                    int contentLength = Integer.parseInt(conn.getHeaderField("Content-Length"));
+                    byte[] buf = new byte[contentLength];
+
+                    // get response body and read it all to transfer buffer
+                    InputStream in = conn.getInputStream();
+                    int read = in.read(buf);
+                    int totalRead = 0;
+                    while (read > 0) {
+                        totalRead += read;
+                        read = in.read(buf, totalRead, buf.length - totalRead);
+                    }
+
+                    // parse json response
+                    JSONObject json = new JSONObject(new String(buf));
+                    String id = json.getString("id");
+                    String accessKey = json.getString("accessKey");
+                    //String region = json.getString("region");
+
+                    // wait some time to wait repo data synced across regions on cloud side
+                    Thread.sleep(5000);
+
+                    ret.postValue("zbox://" + accessKey + "@" + id);
+                }
+
+            } catch (Exception err) {
+                OutputErrorMsg(err);
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                loading.postValue(false);
+            }
+        }).start();
+
+        return ret;
     }
 
     private void OutputErrorMsg(Exception err) {
@@ -442,8 +559,7 @@ public class RepoViewModel extends ViewModel {
     private void addSampleFiles(Repo repo) {
         try {
             // add dir
-            repo.createDirAll(new Path("/dir/sub2/sub3"));
-            repo.createDir(new Path("/dir2"));
+            repo.createDirAll(new Path("/dir/sub2"));
 
             // add text file
             File file = new OpenOptions().create(true).write(true).open(repo, new Path("/hello_world.txt"));
@@ -457,7 +573,7 @@ public class RepoViewModel extends ViewModel {
             channel.read(fileBytes);
             channel.close();
             is.close();
-            file = new OpenOptions().create(true).write(true).open(repo, new Path("/video.mp4"));
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/sample_video.mp4"));
             file.writeOnce(fileBytes);
             file.close();
 
@@ -468,7 +584,7 @@ public class RepoViewModel extends ViewModel {
             channel.read(fileBytes);
             channel.close();
             is.close();
-            file = new OpenOptions().create(true).write(true).open(repo, new Path("/image.jpg"));
+            file = new OpenOptions().create(true).write(true).open(repo, new Path("/sample_image.jpg"));
             file.writeOnce(fileBytes);
             file.close();
 
