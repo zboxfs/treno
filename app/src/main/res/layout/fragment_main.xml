@@ -40,7 +40,7 @@
                     android:layout_marginBottom="8dp"
                     android:autoLink="web"
                     android:text="ZboxFS is a zero-details, privacy-focused in-app file system. Its goal is to help application store files securely, privately and reliably. Visit https://zbox.io/fs for more details."
-                    android:textSize="18sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -48,14 +48,14 @@
                     android:layout_marginBottom="8dp"
                     android:autoLink="web"
                     android:text="Treno is an demo app for basic usage of ZboxFS. It shows how to implement a view model and content provider using ZboxFS. Check out the source code at: https://github.com/zboxfs/treno"
-                    android:textSize="18sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:text="To get started, choose a storage type and create a demo repo"
-                    android:textSize="18sp" />
+                    android:textSize="14sp" />
 
                 <RadioGroup
                     android:id="@+id/frg_main_rgp_storage"
@@ -67,7 +67,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="Memory Storage" />
+                        android:text="Memory Storage"
+                        android:textSize="14sp" />
 
                     <RadioButton
                         android:id="@+id/frg_main_rbn_file"
@@ -81,6 +82,12 @@
                         android:layout_height="wrap_content"
                         android:text="Zbox Cloud Storage" />
                 </RadioGroup>
+
+                <CheckBox
+                    android:id="@+id/frg_main_chk_sample_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="With sample data" />
 
                 <Button
                     android:id="@+id/frg_main_btn_new"

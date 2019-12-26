@@ -76,15 +76,18 @@ public class RepoViewModel extends ViewModel {
 
     public LiveData<Boolean> getRepoIsLocked() { return repoIsLocked; }
 
-    public void createRepo(String uri, String pwd) {
+    public void createRepo(String uri, String pwd, boolean withSample) {
         loading.postValue(true);
         loadingText.postValue("Creating repo...");
         new Thread(() -> {
             try {
                 Repo repo = new RepoOpener().createNew(true).open(uri, pwd);
 
-                loadingText.postValue("Adding sample files...");
-                addSampleFiles(repo);
+                if (withSample) {
+                    loadingText.postValue("Adding sample files...");
+                    addSampleFiles(repo);
+                }
+
                 this.repo.postValue(repo);
 
                 // add repo uri to uri list
@@ -142,7 +145,7 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
-    public LiveData<Boolean> deleteRepo(String uri) {
+    public LiveData<Boolean> destroyRepo(String uri) {
         MutableLiveData<Boolean> result = new MutableLiveData<>();
 
         loading.setValue(true);
@@ -263,9 +266,9 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
-    void addFile(String name, InputStream stream) {
+    void addFile(String name, InputStream stream, int fileSize) {
         loading.setValue(true);
-        loadingText.setValue("Adding file...");
+        loadingText.setValue("Adding file 0% ...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -273,7 +276,16 @@ public class RepoViewModel extends ViewModel {
                 Path path = curr.join(name);
 
                 File file = new OpenOptions().create(true).write(true).open(repo, path);
-                file.writeOnce(stream);
+
+                byte[] buf = new byte[8192];
+                int read, total = 0;
+                while((read = stream.read(buf)) > 0) {
+                    file.write(buf, 0, read);
+                    total += read;
+                    int progress = (int)(((float)total / fileSize) * 100);
+                    loadingText.postValue("Adding file " + progress + "% ...");
+                }
+                file.finish();
                 file.close();
 
                 readDirEntries();

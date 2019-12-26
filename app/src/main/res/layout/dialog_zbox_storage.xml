@@ -57,6 +57,15 @@
             android:layout_height="wrap_content"
             android:entries="@{cacheSizes}" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Note: This repo has maximum storage 200MB and will be deleted after 48 hours."
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="18sp" />
+
     </LinearLayout>
 
 </layout>

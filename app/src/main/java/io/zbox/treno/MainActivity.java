@@ -151,13 +151,13 @@ public class MainActivity extends AppCompatActivity implements ChangePwdDialog.C
 
         Uri uri = data.getData();
 
-        // returned from open file activity, revoke temporary access for content provider
+        // returned from file open activity, revoke temporary access for content provider
         if (requestCode == OPEN_FILE_REQUEST) {
             revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             return;
         }
 
-        // returned from add file activity, add files to repo
+        // returned from file add activity, add files to repo
         if (requestCode == READ_EXTERNAL_FILE_REQUEST && resultCode == Activity.RESULT_OK) {
             ContentResolver resolver = getContentResolver();
 
@@ -170,9 +170,10 @@ public class MainActivity extends AppCompatActivity implements ChangePwdDialog.C
 
                 while (cursor.moveToNext()) {
                     fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                    int fileSize = Integer.parseInt(cursor.getString(cursor.getColumnIndex(OpenableColumns.SIZE)));
                     try {
                         InputStream stream = resolver.openInputStream(uri);
-                        model.addFile(fileName, stream);
+                        model.addFile(fileName, stream, fileSize);
                     } catch (FileNotFoundException err) {
                         Log.e(TAG, err.toString());
                         break;

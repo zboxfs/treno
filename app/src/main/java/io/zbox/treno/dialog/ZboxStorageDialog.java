@@ -41,13 +41,13 @@ public class ZboxStorageDialog extends DialogFragment {
 
     private static final List<String> cacheSizes = Arrays.asList("1MB", "5MB", "50MB", "100MB");
 
-    public interface RegionDialogListener {
-        void onRegionDialogOk(String region, String cacheType, String cacheSize);
+    public interface ZboxStorageDialogListener {
+        void onZboxStorageDialogOk(String region, String cacheType, String cacheSize);
     }
 
-    private RegionDialogListener listener;
+    private ZboxStorageDialogListener listener;
 
-    public ZboxStorageDialog(RegionDialogListener listener) {
+    public ZboxStorageDialog(ZboxStorageDialogListener listener) {
         this.listener = listener;
     }
 
@@ -71,7 +71,7 @@ public class ZboxStorageDialog extends DialogFragment {
                     String cacheType = cacheTypes.get(spinner.getSelectedItemPosition());
                     spinner = rootView.findViewById(R.id.dlg_region_spi_cache_size);
                     String cacheSize = cacheSizes.get(spinner.getSelectedItemPosition());
-                    listener.onRegionDialogOk(region, cacheType, cacheSize);
+                    listener.onZboxStorageDialogOk(region, cacheType, cacheSize);
                 })
                 .setNegativeButton("Cancel", (DialogInterface dialog, int id) -> {
                     Dialog dlg = ZboxStorageDialog.this.getDialog();

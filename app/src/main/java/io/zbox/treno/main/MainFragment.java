@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.RadioGroup;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -38,7 +39,7 @@ import io.zbox.treno.util.Utils;
 public class MainFragment extends Fragment implements
         PasswordDialog.PasswordDialogListener,
         DestroyRepoDialog.DestroyRepoDialogListener,
-        ZboxStorageDialog.RegionDialogListener,
+        ZboxStorageDialog.ZboxStorageDialogListener,
         ForceOpenDialog.ForceOpenDialogListener
 {
     private static final String TAG = MainFragment.class.getSimpleName();
@@ -159,17 +160,19 @@ public class MainFragment extends Fragment implements
 
     public void createNewRepo(View view) {
         RadioGroup rg = layout.findViewById(R.id.frg_main_rgp_storage);
+        CheckBox withSampleCheckBox = layout.findViewById(R.id.frg_main_chk_sample_data);
+        boolean withSample = withSampleCheckBox.isChecked();
         String uri = Utils.randomString(8);
         final String pwd = "pwd";
 
         switch (rg.getCheckedRadioButtonId()) {
             case R.id.frg_main_rbn_mem:
                 uri = "mem://" + uri;
-                model.createRepo(uri, pwd);
+                model.createRepo(uri, pwd, withSample);
                 break;
             case R.id.frg_main_rbn_file:
                 uri = "file://" + getContext().getFilesDir() + "/" + uri;
-                model.createRepo(uri, pwd);
+                model.createRepo(uri, pwd, withSample);
                 break;
             case R.id.frg_main_rbn_zbox:
                 DialogFragment dlg = new ZboxStorageDialog(this);
@@ -185,7 +188,9 @@ public class MainFragment extends Fragment implements
         model.openRepo(uri, pwd, false);
     }
 
-    public void onRegionDialogOk(String region, String cacheType, String cacheSize) {
+    public void onZboxStorageDialogOk(String region, String cacheType, String cacheSize) {
+        CheckBox withSampleCheckBox = layout.findViewById(R.id.frg_main_chk_sample_data);
+        boolean withSample = withSampleCheckBox.isChecked();
         model.createZboxRepo(region).observe(this, repoUri -> {
             String uri = repoUri + "?cache_type=" + cacheType + "&cache_size=" + cacheSize;
             if (cacheType.equals("file")) {
@@ -193,8 +198,7 @@ public class MainFragment extends Fragment implements
                 uri += "&base=" + getContext().getFilesDir() + "/" + repoId;
             }
 
-            Log.d(TAG, "===>" + uri);
-            model.createRepo(uri, "pwd");
+            model.createRepo(uri, "pwd", withSample);
         });
     }
 
@@ -203,7 +207,7 @@ public class MainFragment extends Fragment implements
     }
 
     public void onRepoDestroyOk(String uri, int position) {
-        LiveData<Boolean> repoDeleted = model.deleteRepo(uri);
+        LiveData<Boolean> repoDeleted = model.destroyRepo(uri);
 
         repoDeleted.observe(this, result -> {
             SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
