@@ -1,11 +1,14 @@
 package io.zbox.treno.explorer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +25,8 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +40,7 @@ import io.zbox.treno.dialog.MoveToDialog;
 import io.zbox.treno.dialog.RenameDialog;
 import io.zbox.zboxfs.DirEntry;
 import io.zbox.zboxfs.Path;
+import io.zbox.zboxfs.ZboxException;
 
 public class ExplorerPresenter implements
         ActionMode.Callback,
@@ -85,19 +91,23 @@ public class ExplorerPresenter implements
                 super.onSelectionChanged();
 
                 int selectedCnt = tracker.getSelection().size();
+                Log.d(TAG, "onSelectionChanged " + selectedCnt);
 
-                if (actionMode != null) {
-                    actionMode.setTitle(selectedCnt > 0 ? selectedCnt + " selected" : null);
-                    return;
-                } else if (selectedCnt == 0) {
-                    return;
+
+                if (actionMode == null) {
+                    // start action mode
+                    actionMode = ((AppCompatActivity)context.getActivity()).startSupportActionMode(self);
+
+                    // notify all item to enter action mode
+                    adapter.enterSelectionMode();
                 }
 
-                // start action mode
-                actionMode = ((AppCompatActivity)context.getActivity()).startSupportActionMode(self);
+                actionMode.setTitle(selectedCnt > 0 ? selectedCnt + " selected" : null);
 
-                // notify all item to enter action mode
-                adapter.enterSelectionMode();
+                Menu menu = actionMode.getMenu();
+                menu.findItem(R.id.menu_sel_rename).setEnabled(selectedCnt == 1);
+                menu.findItem(R.id.menu_sel_move_to).setEnabled(selectedCnt == 1);
+                menu.findItem(R.id.menu_sel_export).setEnabled(selectedCnt == 1);
             }
         });
     }
@@ -198,6 +208,26 @@ public class ExplorerPresenter implements
                 return true;
             }
 
+            case R.id.menu_sel_export: {
+                if (selection.size() != 1) return false; // only one item can be selected
+                String pathStr = selection.iterator().next();
+                try {
+                    Path path = new Path(pathStr);
+                    String fileName = path.fileName();
+
+                    tracker.clearSelection();
+                    Context ctx = context.getContext();
+                    OutputStream output = ctx.openFileOutput(fileName, Context.MODE_PRIVATE);
+                    model.export(pathStr, output).observe(context, result -> {
+                        Toast.makeText(ctx, "File exported at " + ctx.getFilesDir(), Toast.LENGTH_LONG).show();
+                    });
+                } catch (Exception err) {
+                    Log.e(TAG, err.toString());
+                }
+
+                return true;
+            }
+
             case R.id.menu_sel_remove: {
                 List<String> paths = new ArrayList<>();
                 for (String pathStr : selection) {
@@ -229,13 +259,9 @@ public class ExplorerPresenter implements
 
     // implements MoveToDialog.MoveToDialogListener.onMoveToDialogOk
     public void onMoveToDialogOk(String to) {
-        Selection<String> selection = tracker.getSelection();
-        List<String> paths = new ArrayList<>();
-        for (String pathStr : selection) {
-            paths.add(pathStr);
-        }
+        String from = tracker.getSelection().iterator().next();
         tracker.clearSelection();
-        model.move(paths, to);
+        model.move(from, to);
     }
 
     // implements CopyToDialog.CopyToDialogListener.onCopyToDialogOk

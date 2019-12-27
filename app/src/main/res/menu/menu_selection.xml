@@ -14,6 +14,9 @@
         android:id="@+id/menu_sel_copy_to"
         android:title="@string/copy_to" />
     <item
+        android:id="@+id/menu_sel_export"
+        android:title="@string/export" />
+    <item
         android:id="@+id/menu_sel_remove"
         android:title="@string/remove" />
 </menu>

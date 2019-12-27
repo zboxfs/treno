@@ -387,7 +387,7 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
-    public void move(List<String> fromStrs, String toStr) {
+    public void move(String fromStr, String toStr) {
         loading.setValue(true);
         loadingText.setValue("Moving file...");
         new Thread(() -> {
@@ -395,15 +395,13 @@ public class RepoViewModel extends ViewModel {
                 Repo repo = this.repo.getValue();
                 Path to = new Path(toStr);
 
-                for (String pathStr : fromStrs) {
-                    Path from = new Path(pathStr);
+                Path from = new Path(fromStr);
 
-                    if (repo.isFile(from) && repo.pathExists(to) && repo.isDir(to)) {
-                        Path tgt = to.join(from.fileName());
-                        repo.move(from, tgt);
-                    } else {
-                        repo.move(from, to);
-                    }
+                if (repo.isFile(from) && repo.pathExists(to) && repo.isDir(to)) {
+                    Path tgt = to.join(from.fileName());
+                    repo.move(from, tgt);
+                } else {
+                    repo.move(from, to);
                 }
 
                 readDirEntries();
@@ -417,7 +415,7 @@ public class RepoViewModel extends ViewModel {
 
     public void copy(List<String> fromStrs, String toStr) {
         loading.setValue(true);
-        loadingText.setValue("Copying file...");
+        loadingText.setValue("Copying file(s)...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();
@@ -447,9 +445,41 @@ public class RepoViewModel extends ViewModel {
         }).start();
     }
 
+    public LiveData<Boolean> export(String fromStr, OutputStream output) {
+        MutableLiveData<Boolean> ret = new MutableLiveData<>();
+
+        loading.setValue(true);
+        loadingText.setValue("Export file...");
+        new Thread(() -> {
+            try {
+                Repo repo = this.repo.getValue();
+
+                Path path = new Path(fromStr);
+                if (repo.isFile(path)) {
+                    File file = new OpenOptions().read(true).open(repo, path);
+                    file.read(output);
+                    file.close();
+                    ret.postValue(true);
+                }
+            } catch (Exception err) {
+                OutputErrorMsg(err);
+            } finally {
+                try {
+                    output.close();
+                } catch (IOException err) {
+                    OutputErrorMsg(err);
+                }
+
+                loading.postValue(false);
+            }
+        }).start();
+
+        return ret;
+    }
+
     public void remove(List<String> paths) {
         loading.setValue(true);
-        loadingText.setValue("Removing file...");
+        loadingText.setValue("Removing file(s)...");
         new Thread(() -> {
             try {
                 Repo repo = this.repo.getValue();

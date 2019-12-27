@@ -9,6 +9,7 @@
     <string name="select_all">Select All</string>
     <string name="open">Open</string>
     <string name="copy_to">Copy To</string>
+    <string name="export">Export</string>
     <string name="destination">Destination</string>
     <string name="move_to">Move To</string>
     <string name="rename">Rename</string>
